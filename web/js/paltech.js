@@ -65,8 +65,8 @@
      */
     async function load_api_workflows() {
         let wf = {
-            'flux_kontext': '/js/flux-kontext.json'
-            // 'flux_kontext': 'paltech/web/js/flux-kontext.json'
+            // 'flux_kontext': '/js/flux-kontext.json'
+            'flux_kontext': 'paltech/js/flux-kontext.json'
 
         }
 
@@ -198,8 +198,8 @@
     // WebSocket variables for reconnection logic
     let ws;
     let reconnectAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 5; // Max attempts before giving up and asking user to reload
-    const RECONNECT_DELAY_MS = 3000; // Delay between reconnect attempts (3 seconds)
+    const MAX_RECONNECT_ATTEMPTS = 10; // Max attempts before giving up and asking user to reload
+    const RECONNECT_DELAY_MS = 5000; // Delay between reconnect attempts (3 seconds)
 
     // HTML elements references (defined once to avoid repeated DOM queries)
     const generate = _('#generate');
