@@ -22,7 +22,7 @@
   },
   "301": {
     "inputs": {
-      "unet_name": "flux1-kontext-dev.safetensors",
+      "unet_name": "flux1-dev-kontext_fp8_scaled.safetensors",
       "weight_dtype": "default"
     },
     "class_type": "UNETLoader",
@@ -64,7 +64,7 @@
   },
   "308": {
     "inputs": {
-      "text": "While preserving the box of serum, shampoo, and cream bottles, and even the text on the bottles, create another version by fixing the issue in the box cartoon.",
+      "text": "Make a muslim woman with the face details of the Middle East wear the dress and walk in the street while preserving the dress's details and colors.",
       "clip": [
         "64",
         0
@@ -128,7 +128,7 @@
   },
   "318": {
     "inputs": {
-      "seed": 985727261872272,
+      "seed": 307133173663637,
       "steps": 20,
       "cfg": 1,
       "sampler_name": "euler",
@@ -174,7 +174,7 @@
   },
   "355": {
     "inputs": {
-      "width": 1024,
+      "width": 512,
       "height": 1024,
       "batch_size": 1
     },
@@ -185,7 +185,8 @@
   },
   "357": {
     "inputs": {
-      "image": "IMG_9735.jpg"
+      "image": "WhatsApp Image 2025-07-06 at 3.51.14 PM.jpeg",
+      "upload": "image"
     },
     "class_type": "LoadImage",
     "_meta": {
