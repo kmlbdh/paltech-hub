@@ -97,7 +97,7 @@
      * @throws {Error} If the upload fails.
      */
     async function uploadImage(imageFile, filename, serverAddress = window.location.origin, folderType = 'input', overwrite = false) {
-        const url = `${serverAddress}/upload/image`;
+        const url = `${serverAddress}/upload/image`;rl);
         const formData = new FormData();
         formData.append('image', imageFile, filename);
         formData.append('type', folderType);
@@ -183,6 +183,8 @@
     // =============================================
 
     const client_id = uuidv4();
+
+    // const realSkin_texture_tigger = "skin texture style";
     // Assumes ComfyUI is on the same host/port as the frontend
     const server_address = window.location.hostname + ':' + window.location.port;
 
@@ -458,6 +460,11 @@
                 return;
             }
 
+            //add-ons according to choices of the user
+            // if(true){
+            //     prompt_text = prompt_text.append()
+            // }
+
             // Determine seed number
             let rndseed = seed_input ? seed_input.value : seed(); // Default to random if seed_input is missing
             if (is_random_input && is_random_input.checked) {
@@ -593,14 +600,24 @@
             displayModalMessage('', false); // Clear and hide any previous WebSocket error messages
         };
 
-        ws.onmessage = async function(event) {
-            try {
-                const data = JSON.parse(event.data);
+       ws.onmessage = async function(event) {            
+            let receivedData = event.data;
 
+            // Check if the received data is a Blob
+            if (receivedData instanceof Blob) {
+                // If it's a Blob, it's likely an intermediate image preview.
+                // Log it if you want to confirm, then simply return to ignore it.
+                console.log("Ignoring Blob (intermediate image) message.");
+                return; // <--- This line will skip all further processing for Blob messages
+            }
+
+            // If it's not a Blob, it should be a string (presumably JSON)
+            try {
+                const data = JSON.parse(receivedData); // Parse the string data
+                
                 switch (data.type) {
                     case 'progress':
                         updateProgress(data['data']['max'], data['data']['value']);
-                        // Update node status during progress if data.data.node is available
                         if (data['data']['node'] && node_status_el) {
                             node_status_el.innerText = `Processing: ${data['data']['node']}`;
                         }
@@ -625,24 +642,23 @@
 
                         if (data['data']['output'] && 'images' in data['data']['output']) {
                             renderGeneratedImages(data['data']['output']['images']);
+                            console.log('data[data][output][images]', data['data']['output']['images'])
                         } else {
                             console.warn("No 'images' found in the executed output data for this node.");
                         }
                         break;
                     case 'execution_interrupted':
                         console.log('ComfyUI Execution Interrupted.');
-                        updateUIForGenerationState(false); // Reset UI on interruption
+                        updateUIForGenerationState(false);
                         displayModalMessage('Generation interrupted.', true);
                         if (node_status_el) {
                             node_status_el.innerText = 'Interrupted!';
                         }
                         break;
                     case 'status':
-                        // Update generation status based on queue remaining
                         updateUIForGenerationState(data['data']['status']['exec_info']['queue_remaining'] > 0);
                         if (!IS_GENERATING) {
                             console.log('ComfyUI queue is empty. Generation finished or idle.');
-                            // Clear modal message related to connection if status is idle
                             if (modal && _('#modal-message') && _('#modal-message').innerHTML.includes('WebSocket connection')) {
                                 displayModalMessage('', false);
                             }
@@ -652,7 +668,7 @@
                         console.log('Received unknown WebSocket message type:', data.type, data);
                 }
             } catch (error) {
-                console.error('Error parsing WebSocket message or handling data:', error, event.data);
+                console.error('Error parsing WebSocket message or handling data:', error, receivedData);
                 displayModalMessage('Error receiving updates from server.', true);
             }
         };
