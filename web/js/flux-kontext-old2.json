@@ -1,7 +1,7 @@
 {
   "61": {
     "inputs": {
-      "vae_name": "ae.safetensors"
+      "vae_name": "ae.sft"
     },
     "class_type": "VAELoader",
     "_meta": {
@@ -64,10 +64,10 @@
   },
   "308": {
     "inputs": {
-      "text": "Placed the box of creams and bottles of shampoo on a white table, and a woman with Middle Eastern facial details and a skin texture style sat beside it, looking at the box full of joy.",
+      "text": "While preserving the box of serum, shampoo, and cream bottles, and even the text on the bottles, create another version by fixing the issue in the box cartoon.",
       "clip": [
-        "360",
-        1
+        "64",
+        0
       ]
     },
     "class_type": "CLIPTextEncode",
@@ -77,10 +77,10 @@
   },
   "311": {
     "inputs": {
-      "text": "nsfw, porn, sex, nude, topless, undressed, cleavage, nipples, genitalia, buttocks, exposed skin, erotic, intimate, sheer, transparent, see-through, unclothed, bare breasts, bare chest, revealing, lingerie, swimwear.\nlow quality, blurry, grainy, artifacts, deformed, bad anatomy, extra limbs, missing limbs, extra fingers, missing fingers, fused fingers, poorly drawn hands, poorly drawn face, two heads, out of focus, distorted, dark, overexposed, underexposed, unrealistic colors, cluttered background, poor lighting.\nunrealistic skin, plastic skin, waxy skin, doll-like, cartoon, anime, drawing, painting, ",
+      "text": "",
       "clip": [
-        "360",
-        1
+        "64",
+        0
       ]
     },
     "class_type": "CLIPTextEncode",
@@ -128,14 +128,14 @@
   },
   "318": {
     "inputs": {
-      "seed": 871846721555643,
-      "steps": 25,
+      "seed": 985727261872272,
+      "steps": 20,
       "cfg": 1,
       "sampler_name": "euler",
-      "scheduler": "normal",
+      "scheduler": "simple",
       "denoise": 1,
       "model": [
-        "360",
+        "301",
         0
       ],
       "positive": [
@@ -185,41 +185,11 @@
   },
   "357": {
     "inputs": {
-      "image": "IMG_9732.jpg"
+      "image": "IMG_9735.jpg"
     },
     "class_type": "LoadImage",
     "_meta": {
       "title": "Load Image"
-    }
-  },
-  "360": {
-    "inputs": {
-      "PowerLoraLoaderHeaderWidget": {
-        "type": "PowerLoraLoaderHeaderWidget"
-      },
-      "lora_1": {
-        "on": true,
-        "lora": "skin texture style v5.safetensors",
-        "strength": 0.85
-      },
-      "lora_2": {
-        "on": true,
-        "lora": "texta.safetensors",
-        "strength": 1
-      },
-      "➕ Add Lora": "",
-      "model": [
-        "301",
-        0
-      ],
-      "clip": [
-        "64",
-        0
-      ]
-    },
-    "class_type": "Power Lora Loader (rgthree)",
-    "_meta": {
-      "title": "Power Lora Loader (rgthree)"
     }
   }
 }
