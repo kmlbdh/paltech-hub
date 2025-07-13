@@ -97,7 +97,7 @@
      * @throws {Error} If the upload fails.
      */
     async function uploadImage(imageFile, filename, serverAddress = window.location.origin, folderType = 'input', overwrite = false) {
-        const url = `${serverAddress}/upload/image`;rl);
+        const url = `${serverAddress}/upload/image`;
         const formData = new FormData();
         formData.append('image', imageFile, filename);
         formData.append('type', folderType);
