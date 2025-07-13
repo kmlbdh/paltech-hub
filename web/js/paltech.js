@@ -667,7 +667,7 @@
                 console.error('Connection died unexpectedly.');
             }
 
-            displayModalMessage('WebSocket connection lost. Attempting to reconnect...', true);
+            // displayModalMessage('WebSocket connection lost. Attempting to reconnect...', true);
 
             if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                 reconnectAttempts++;
