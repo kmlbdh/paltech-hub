@@ -54,7 +54,7 @@ html {
     z-index: 3;
     border-radius: 0;
     height: 15px;
-    background-color: #0c3047;
+    background-color: #3c32c8;
     border: 0;
 }
 
@@ -71,7 +71,7 @@ html {
 }
 
 #left-col h4 {
-    background-color: #13669e;
+    background-color: rgb(60, 50, 200);
     position: relative;
     padding: 8px 0;
 }
@@ -97,8 +97,9 @@ html {
 }
 
 .uk-notification-message {
-    background-color: #06633c;
-    color: #ddd;
+    font-size: 0.95em;
+   background-color: whitesmoke;
+    /*  color: #ddd; */
 }
 
 datalist {

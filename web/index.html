@@ -1,165 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Paltech Hub AI</title>
-    <!-- <link rel="stylesheet" type="text/css" href="/css/uikit.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/paltech.css?v=0.0.1"> -->
-    <link rel="stylesheet" type="text/css" href="/paltech/css/uikit.min.css">
-    <link rel="stylesheet" type="text/css" href="/paltech/css/paltech.css?v=0.0.1">
-  </head>
-  <body>
-    <aside id="left-col" class="uk-visible@m">
-      <h4 class="uk-text-center uk-margin-remove-vertical text-light uk-light">Paltech Hub AI<small><sup> v0.1</sup></small></h4>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paltech Hub AI - Home</title>
 
-      <div class="left-content-box left-nav-wrap">
-        <form class="uk-grid-small">
-          <div uk-accordion="multiple: true">
-            <div class="uk-open">
-              <a class="uk-accordion-title uk-light" href>Generation params</a>
+    <link rel="stylesheet" type="text/css" href="./css/index.css?v=0.0.1">
 
-              <div class="uk-accordion-content uk-grid-small" uk-grid>
-                <!-- <div class="uk-width-1-1@s uk-margin">
-                  <label class="uk-form-label uk-light" for="accuracy-input">Accuracy</label>
-                  <input class="uk-range" id="accuracy-input" type="range" value="2.5" min="1.0" max="8.0" step="0.5" aria-label="Range">
-                  <div class="uk-form-label uk-text-muted" uk-grid>
-                    <datalist id="batch-size-values" class="uk-form-label uk-text-muted uk-light">
-                      <option value="0" label="1"></option>
-                      <option value="33" label="2"></option>
-                      <option value="66" label="3"></option>
-                      <option value="100" label="4"></option>
-                    </datalist>
-                    <div class="uk-width-1-2@s uk-light"></span>Creativity</div>
-                    <div class="uk-width-1-2@s uk-light" style="text-align:right;">Prompt</span></div>
-                  </div>
-                </div> -->
-
-                <div class="uk-width-1-1@s uk-margin">
-                  <label class="uk-form-label uk-light" for="batch-size-input">Images to generate</label>
-                  <input class="uk-range" id="batch-size-input" type="range" value="1" min="1" max="4" step="1" aria-label="Range" list="batch-size-values">
-                  <datalist id="batch-size-values" class="uk-form-label uk-text-muted uk-light">
-                    <option value="0" label="1"></option>
-                    <option value="33" label="2"></option>
-                    <option value="66" label="3"></option>
-                    <option value="100" label="4"></option>
-                  </datalist>
-                </div>
-
-                <div class="uk-width-1-1@s uk-margin uk-text-center">
-                </div>
-                 
-
-                <div class="uk-width-1-1@s uk-margin">
-                  <div class="uk-width-1-1@s uk-flex uk-flex-row uk-margin">
-                    <div class="uk-width-1-1@s uk-flex uk-flex-column">
-                      <label class="uk-form-label uk-light" for="image-dimension-presets">Image Size</label>
-                      <!-- This container will act as our button group -->
-                      <div class="radio-button-group uk-width-1-1@s uk-flex-start" id="image-dimension-presets">
-                        <input class="uk-radio" type="radio" name="image-size" id="laptop-size" value="square" checked>
-                        <label for="laptop-size"><span uk-icon="icon: grid; ratio: 1"></span></label>
-
-                        <input class="uk-radio" type="radio" name="image-size" id="phone-size" value="portrait">
-                        <label for="phone-size"><span uk-icon="icon: phone; ratio: 1"></span></label>
-
-                        <input class="uk-radio" type="radio" name="image-size" id="phone-landscape-size" value="landscape">
-                        <label for="phone-landscape-size"><span uk-icon="icon: phone-landscape; ratio: 1"></span></label>
-                      </div>
-                    </div>
-
-                    <div class="uk-width-1-3@s uk-flex uk-flex-column">
-                      <label class="uk-form-label uk-light" for="image-height">Height</label>
-                      <input id="image-height" class="uk-input uk-form-width-msmall" type="number" value="1024" min="512" max="3000" step="16"  placeholder="Height" aria-label="Small">
-                    </div>
-
-                    <div class="uk-width-1-3@s uk-flex uk-flex-column">
-                      <label class="uk-form-label uk-light" for="image-width">Width</label>
-                      <input id="image-width" class="uk-input uk-form-width-msmall" type="number" value="512" min="512" max="3000" step="16"  placeholder="Width" aria-label="Small">
-                    </div>
-                  </div>
-
-                  <div class="uk-width-1-1@s uk-margin uk-flex uk-flex-row">
-       
-                  </div>
-                </div>
-              </div>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter transition-colors duration-300 flex flex-col min-h-screen">
+    <!-- Global Fixed Header (Copied from image-ai.html) -->
+    <header class="flex-shrink-0 bg-white dark:bg-gray-900 shadow-md p-4 flex flex-col transition-colors duration-300 h-24">
+        <!-- Top Row: Title, Theme, Language -->
+        <div class="flex justify-between items-center w-full mb-2">
+            <h1 class="text-3xl font-bold text-[#3c32c8] flex items-center" dir="ltr">
+                <img src="./sources/artboard-19-copy-4.webp" alt="Paltech Hub Logo" class="h-10 inline-block mr-2 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/100x32/cccccc/333333?text=Paltech+Logo';"> AI
+            </h1>
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300">
+                    <span id="theme-icon" class="text-xl">💡</span>
+                </button>
+                <select id="language-select" class="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600">
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                </select>
             </div>
+        </div>
 
+        <!-- Bottom Row: Progress Bar and Node Status (Static on landing page) -->
+        <div class="w-full bg-gray-300 dark:bg-gray-700 h-1">
+            <div id="main-progress" class="bg-[#3c32c8] h-1 transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div id="current-node-status" class="text-center text-xs text-gray-600 dark:text-gray-400 py-1"></div>
+    </header>
 
-            <div class="uk-open">
-              <a class="uk-accordion-title uk-light" href>Prompt</a>
-
-              <div class="uk-accordion-content uk-grid-small" uk-grid>
-
-                <div class="uk-width-1-1@s">
-                  <!-- <label class="uk-form-label uk-light" for="prompt-input">prompt</label> -->
-                  <button class="uk-margin" uk-icon="icon: question" type="button"></button>
-                  <div class="uk-card uk-card-small uk-card-body uk-card-default" uk-drop="pos: right-top; mode: click;">You need to mention some details for the image uploaded element and write down. Eg: "while preserving the bottle's details as is make ...." or "while presrving the woman's clothes, hair and facial details".
-                    <br/>If you see any problem with generated image try to add more details and regenerate it.</div>
-                  <div class="uk-form-controls">
-                    <textarea name="prompt-input" class="uk-textarea" id="prompt-input" rows="5" placeholder="Add prompt" aria-label="Textarea"></textarea>
-                  </div>
-                </div>
-              </div>
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center p-8 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+        <div class="text-center">
+            <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4" data-lang-key="welcome_title">Welcome to Paltech Hub AI</h2>
+            <p class="text-lg text-gray-700 dark:text-gray-300 mb-8" data-lang-key="welcome_intro">Your gateway to advanced AI image and video generation.</p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="./image-ai.html" class="inline-block bg-[#3c32c8] hover:bg-[#2a2491] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105" data-lang-key="start_image_gen">
+                    Start Generating Images
+                </a>
+                <a href="./image-ai.html" class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105" data-lang-key="start_video_gen">
+                    Generate AI Videos
+                </a>
             </div>
+        </div>
+    </main>
 
-            <div class="uk-open">
-              <a class="uk-accordion-title uk-light" href>Image To Upload</a>
-                <div class="uk-accordion-content uk-grid-small" uk-grid>
-                  <div class="uk-width-1-1@s">
-                    <div uk-form-custom>
-                      <input type="file" id="image-input" aria-label="Custom controls" accept="image/png, image/jpg">
-                      <button class="uk-button uk-button-default uk-light" type="button" tabindex="-1">Upload image</button>
-                    </div>
-                  </div>
+    <!-- Simple Footer (Updated to match image-ai.html) -->
+    <footer class="flex-shrink-0 p-4 text-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm transition-colors duration-300">
+        <p data-lang-key="footer_text"></p>
+    </footer>
 
-
-                  <div class="uk-width-1-1@s">
-                    <div id="display-uploaded-image" class="uk-height-medium uk-flex uk-flex-center uk-flex-middle uk-background-cover" uk-img="loading: eager">
-                    </div>
-                  </div>
-                  </div>
-                </div>
-            </div>
-
-          </div>
-        </form>
-      </div>
-    </aside>
-    <div id="content" data-uk-height-viewport="expand: true">
-      <progress id="main-progress" class="progress" value="0" max="0"><span id=""></span></progress>
-
-      <div class="uk-text-center uk-container uk-container-expand">
-        <form>
-          <button id="generate" class="uk-button uk-button-success" type="button">
-            <span uk-icon="icon: bolt"></span>&nbsp;Generate
-          </button>
-          <button id="interrupt" class="uk-button uk-button-danger" type="button" style="display: none;">
-            <span uk-icon="icon: close"></span>&nbsp;Stop
-          </button>
-
-          <input id="main-seed" class="uk-input" type="text" placeholder="Seed" aria-label="Seed" value="0">
-          <label>Random <input id="is-random" class="uk-checkbox" type="checkbox" checked></label>
-        </form>
-      </div>
-
-      <div id="results" class="uk-child-width-expand uk-text-center" uk-grid uk-lightbox></div>
-    </div>
-    <div id="app-modal" uk-modal>
-      <div class="uk-modal-dialog uk-modal-body">
-        <h2 class="uk-modal-title">An error occurred</h2>
-        <p id="modal-message"></p>
-        <p class="uk-text-center">
-          <button class="uk-button uk-button-default uk-modal-close" type="button">Close</button>
-        </p>
-      </div>
-    </div>
-    <!-- <script src="/js/uikit.min.js"></script>
-    <script src="/js/uikit-icons.min.js"></script>
-    <script src="/js/paltech.js"></script> -->
-
-    <script src="paltech/js/uikit.min.js"></script>
-    <script src="paltech/js/uikit-icons.min.js"></script>
-    <script src="paltech/js/paltech.js"></script>
-  </body>
+    <script src="./js/index.js"></script>
+</body>
 </html>

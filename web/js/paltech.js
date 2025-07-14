@@ -65,8 +65,8 @@
      */
     async function load_api_workflows() {
         let wf = {
-            // 'flux_kontext': '/js/flux-kontext.json'
-            'flux_kontext': 'paltech/js/flux-kontext.json'
+            'flux_kontext': '/js/flux-kontext.json'
+            // 'flux_kontext': 'paltech/js/flux-kontext.json'
 
         }
 
@@ -228,7 +228,23 @@
 
     // --- 4. UI Update Functions ---
     // ==============================
-
+    /**
+     * Displays a message in the UIkit modal.
+     * @param {string} message - The message to display.
+     * @param {string} status - Whether it's primary, warning, success or danger.
+     * @param {string} [status="primary"] - The status of the notification (default is "primary").
+     * @param {string} [pos="top-right"] - The position of the notification on the screen (default is "top-right").
+     * @param {number} timeout - The duration in milliseconds before the notification disappears.
+     */
+    function displayNotification(message, status="primary", pos="top-right", timeout=5000 ){
+        if(message === undefined || message === null || message.trim() === '')  return;
+        UIkit.notification({
+            message: message,
+            status: status,
+            pos: pos,
+            timeout: timeout
+        });
+    }
     /**
      * Displays a message in the UIkit modal.
      * @param {string} message - The message to display.
@@ -650,7 +666,8 @@
                     case 'execution_interrupted':
                         console.log('ComfyUI Execution Interrupted.');
                         updateUIForGenerationState(false);
-                        displayModalMessage('Generation interrupted.', true);
+                        // displayModalMessage('Generation interrupted.', true);
+                        displayNotification('Generation interrupted.', 'success');
                         if (node_status_el) {
                             node_status_el.innerText = 'Interrupted!';
                         }
@@ -658,7 +675,9 @@
                     case 'status':
                         updateUIForGenerationState(data['data']['status']['exec_info']['queue_remaining'] > 0);
                         if (!IS_GENERATING) {
-                            console.log('ComfyUI queue is empty. Generation finished or idle.');
+                            const msg = 'ComfyUI queue is empty. Generation finished or idle.';
+                            console.log(msg);
+                            displayNotification(msg, 'primary');
                             if (modal && _('#modal-message') && _('#modal-message').innerHTML.includes('WebSocket connection')) {
                                 displayModalMessage('', false);
                             }
@@ -677,34 +696,38 @@
             console.log('WebSocket Closed:', event);
             updateUIForGenerationState(false); // Reset UI on connection close
 
-            if (event.wasClean) {
+            // Only display user-facing messages for unexpected closures
+            if (!event.wasClean) {
+                console.error('Connection died unexpectedly. Initiating reconnect logic.');
+
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+                    displayNotification('WebSocket connection lost. Attempting to reconnect...', 'warning'); // Display notification here
+                    setTimeout(setupWebSocket, RECONNECT_DELAY_MS);
+                } else {
+                    console.error("Max reconnect attempts reached. Please reload the page.");
+                    displayNotification('WebSocket connection lost. Max reconnect attempts reached. Please reload the page manually.', 'warning');
+                }
+            } else {
                 console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
-            } else {
-                console.error('Connection died unexpectedly.');
-            }
-
-            // displayModalMessage('WebSocket connection lost. Attempting to reconnect...', true);
-
-            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                reconnectAttempts++;
-                console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
-                setTimeout(setupWebSocket, RECONNECT_DELAY_MS);
-            } else {
-                console.error("Max reconnect attempts reached. Please reload the page.");
-                displayModalMessage('WebSocket connection lost. Max reconnect attempts reached. Please reload the page manually.', true);
+                // Optionally, inform user of clean closure if relevant (e.g., server shutdown)
+                // displayNotification('Connection closed.', 'info');
             }
         };
 
         ws.onerror = function(error) {
             console.error('WebSocket Error:', error);
-            // The 'onclose' event usually follows 'onerror', so the reconnection logic is mostly in 'onclose'
-            displayModalMessage('WebSocket connection error. Attempting to reconnect...', true);
+            // Just log the error. The 'onclose' event will follow this for actual disconnections
+            // and handle the user-facing notification and reconnection logic.
+            // DO NOT display a notification here to avoid duplicates.
         };
     }
 
 
     // --- 7. Initialization Logic ---
     // ===============================
+    // displayNotification('test', 'warning', 'top-right', 5000000);
 
     // Handle initial image dimension state on page load
     const initialCheckedRadio = _('input[type="radio"][name="image-size"]:checked');

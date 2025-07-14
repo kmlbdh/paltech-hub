@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paltech Hub AI</title>
+    <!-- Chosen Palette: White & Deep Purple (#3c32c8) for Light Mode; Dark Gray & Deep Purple (#3c32c8) for Dark Mode -->
+    <!-- Application Structure Plan: Two-column layout with a left control panel (accordions for settings) and a right content area. The right area starts with the 'How-To' guide as an empty state, which is then replaced by a progress indicator and finally the image results. This structure separates input controls from output, providing a clear, task-oriented user flow. -->
+    <!-- Visualization & Content Choices: The main content is a user guide. Goal: Inform user on first load. Presentation: The guide is rendered directly as styled HTML in the main content area (empty state). Interaction: The guide is replaced by a loading state and then results upon clicking the 'Generate' button. This provides clear initial instructions without cluttering the UI once the user starts generating. Other inputs like sliders and radio buttons are used for their intuitive control over numerical and categorical options. The final result is an an image grid for easy comparison. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+     <script>
+        // Tailwind CSS configuration for dark mode using a selector
+        tailwind.config = {
+            darkMode: 'selector', // This tells Tailwind to look for data-theme="dark"
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        cairo: ['Cairo', 'sans-serif'], // Add Cairo to Tailwind's font family
+                    },
+                },
+            },
+        };
+    </script> --> 
+    <link rel="stylesheet" type="text/css" href="./css/image-ai.css?v=0.0.1">
+     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter transition-colors duration-300 flex flex-col h-screen">
+
+    <!-- Global Fixed Header -->
+    <header class="flex-shrink-0 bg-white dark:bg-gray-900 shadow-md p-4 flex flex-col transition-colors duration-300 h-24">
+        <!-- Top Row: Title, Theme, Language -->
+        <div class="flex justify-between items-center w-full mb-2">
+            <!-- Left side: Logo -->
+            <h1 class="text-3xl font-bold text-[#3c32c8] flex items-center" dir="ltr">
+                <img src="https://www.paltechhub.com/storage/logos/artboard-19-copy-4.webp" alt="Paltech Hub Logo" class="h-10 inline-block mr-2 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/100x32/cccccc/333333?text=Paltech+Logo';"> AI
+            </h1>
+            <!-- Right side: Back button, Theme, Language -->
+            <div id="right-controls" class="flex items-center gap-4" dir="ltr">
+                <button id="back-button" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300">
+                    <span id="theme-icon" class="text-xl">💡</span>
+                </button>
+                <select id="language-select" class="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600">
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Bottom Row: Progress Bar and Node Status -->
+        <div class="w-full bg-gray-300 dark:bg-gray-700 h-1">
+            <div id="main-progress" class="bg-[#3c32c8] h-1 transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div id="current-node-status" class="text-center text-xs text-gray-600 dark:text-gray-400 py-1"></div>
+    </header>
+
+    <!-- Notification Bar -->
+    <div id="notification-bar" class="text-sm"></div>
+
+    <!-- Main Content Wrapper: Contains both sidebar and main content area -->
+    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+
+        <!-- Left Sidebar: Controls -->
+        <aside class="w-full md:w-1/3 bg-white dark:bg-gray-900 p-6 transition-colors duration-300 flex flex-col min-h-0 md:max-h=full">
+            <div class="space-y-6 flex-grow overflow-y-auto pb-20"> <!-- Added flex-grow and pb-20 for sticky button -->
+                <!-- Generation Params Accordion -->
+                <details class="space-y-4" open>
+                    <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="generation_params_title">Generation Params</summary>
+                    <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-6">
+                        <!-- Seed and Random controls - Moved to top -->
+                        <div class="flex items-center gap-4">
+                            <label for="main-seed" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="seed_label">Seed</label>
+                            <input id="main-seed" class="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md w-32 px-2 py-1 text-center text-gray-800 dark:text-gray-200" type="text" data-lang-key="seed_placeholder" placeholder="Seed" value="0">
+                            <label class="flex items-center gap-2 cursor-pointer text-gray-800 dark:text-gray-200">
+                                <input id="is-random" class="form-checkbox bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded text-[#3c32c8] focus:ring-[#3c32c8]" type="checkbox" checked>
+                                <span data-lang-key="random_checkbox">Random</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label for="batch-size-input" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" data-lang-key="images_to_generate_label">Images to generate</label>
+                            <input id="batch-size-input" type="range" min="1" max="4" value="1" step="1" class="bg-gray-200 dark:bg-gray-700">
+                            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" data-lang-key="image_size_label">Image Size</label>
+                            <div id="image-dimension-presets" class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <input type="radio" name="image-size" id="size-square" value="square" class="image-size-radio" checked>
+                                    <label for="size-square" class="image-size-label text-xs">
+                                        <div class="w-6 h-6 icon-shape"></div>
+                                        <span data-lang-key="size_square">Square</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <input type="radio" name="image-size" id="size-portrait" value="portrait" class="image-size-radio">
+                                    <label for="size-portrait" class="image-size-label text-xs">
+                                        <div class="w-5 h-7 icon-shape"></div>
+                                        <span data-lang-key="size_portrait">Portrait</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <input type="radio" name="image-size" id="size-landscape" value="landscape" class="image-size-radio">
+                                    <label for="size-landscape" class="image-size-label text-xs">
+                                        <div class="w-7 h-5 icon-shape"></div>
+                                        <span data-lang-key="size_landscape">Landscape</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="image-height" class="block text-xs font-medium text-gray-500 dark:text-gray-400" data-lang-key="height_label">Height</label>
+                                    <input id="image-height" type="number" value="1024" class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-center text-gray-800 dark:text-gray-200">
+                                </div>
+                                <div>
+                                    <label for="image-width" class="block text-xs font-medium text-gray-500 dark:text-gray-400" data-lang-key="width_label">Width</label>
+                                    <input id="image-width" type="number" value="1024" class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-center text-gray-800 dark:text-gray-200">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Prompt Accordion -->
+                    <details class="space-y-4" open>
+                        <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="prompt_title">Prompt</summary>
+                        <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700">
+                            <textarea id="prompt-input" rows="5" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-md shadow-sm p-2 text-gray-800 dark:text-gray-200" data-lang-key="prompt_placeholder" placeholder="Add prompt..."></textarea>
+                        </div>
+                    </details>
+
+                    <!-- Image Upload Accordion -->
+                    <details class="space-y-4" open>
+                        <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="image_upload_title">Image To Upload</summary>
+                        <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-4">
+                            <div class="flex justify-center">
+                                <label for="image-input" class="cursor-pointer bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-md" data-lang-key="select_image_button">
+                                    Select Image
+                                </label>
+                                <input type="file" id="image-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                            </div>
+                            <div id="display-uploaded-image" class="w-full border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
+                                <span class="text-gray-500 dark:text-gray-400" data-lang-key="image_preview_placeholder">Image Preview</span>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- History Accordion -->
+                    <details class="space-y-4" open>
+                        <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="history_title">History</summary>
+                        <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-4">
+                            <div id="history-container" class="max-h-64 overflow-y-auto">
+                                <!-- History items will be rendered here by JavaScript -->
+                                <p class="text-gray-500 dark:text-gray-400 text-sm" data-lang-key="history_empty_message">No history yet.</p>
+                            </div>
+                            <button id="clear-history-button" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300" data-lang-key="clear_history_button">
+                                Clear History
+                            </button>
+                        </div>
+                    </details>
+            </div>
+            <!-- New sticky container for Generate/Interrupt buttons -->
+            <div class="sticky bottom-0 w-full p-4 bg-white dark:bg-gray-900 shadow-lg border-t border-gray-200 dark:border-gray-700 z-10 flex flex-col gap-4">
+                <button id="generate" class="bg-[#3c32c8] hover:bg-[#2a2491] text-white font-bold py-3 px-6 rounded-md flex items-center justify-center gap-2 transition-colors w-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span data-lang-key="generate_button">Generate</span>
+                </button>
+                <button id="interrupt" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md flex items-center justify-center gap-2 transition-colors w-full" style="display: none;">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <span data-lang-key="interrupt_button">Interrupt</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 md:w-2/3 flex flex-col bg-white dark:bg-gray-800 min-h-0 overflow-y-auto transition-colors duration-300 p-8">
+            <!-- Initial State: How-To Guide -->
+            <div id="guide-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-md dark:shadow-xl">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4" data-lang-key="guide_title">How to Generate Your AI Images</h2>
+                <p class="text-gray-700 dark:text-gray-400 mb-6" data-lang-key="guide_intro">Welcome to Paltech Hub AI! Follow these steps to generate your unique images. This tool leverages the Flux Kontext Dev model, which intelligently integrates your provided image into new scenes and backgrounds based on your creative prompts.</p>
+                
+                <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4 border-b-2 border-[#3c32c8] pb-2" data-lang-key="guide_steps_title">Step-by-Step Guide:</h3>
+                
+                <ol class="list-decimal list-inside space-y-6 text-gray-700 dark:text-gray-300">
+                    <li>
+                        <strong class="font-semibold text-gray-900 dark:text-white" data-lang-key="step1_title">Set Quantity (Images to Generate)</strong>
+                        <p class="pl-6 text-gray-700 dark:text-gray-400" data-lang-key="step1_desc">Navigate to the "Generation params" section on the left. Use the <strong>"Images to generate" slider</strong> to select how many variations of your image you would like to create. You can typically choose between 1 and 4 images.</p>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-900 dark:text-white" data-lang-key="step2_title">Define Image Dimensions (Image Size)</strong>
+                        <p class="pl-6 text-gray-700 dark:text-gray-400" data-lang-key="step2_desc">In the "Image Size" subsection, choose your preferred aspect ratio and dimensions: Square, Portrait, or Landscape. The "Height" and "Width" fields will automatically update to reflect your selection.</p>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-900 dark:text-white" data-lang-key="step3_title">Craft Your Prompt</strong>
+                        <p class="pl-6 text-gray-700 dark:text-gray-400" data-lang-key="step3_desc">Proceed to the "Prompt" section. In the text box labeled <strong>"Add prompt,"</strong> describe in detail what you envision for your generated image. This prompt will guide the AI in transforming or re-contextualizing your input image. Be descriptive and imaginative!</p>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-900 dark:text-white" data-lang-key="step4_title">Upload Your Input Image</strong>
+                        <p class="pl-6 text-gray-700 dark:text-gray-400" data-lang-key="step4_desc">Locate the image upload area. Click to select an image from your device. This image will serve as the <strong>core visual element</strong> that the AI will integrate and transform according to your prompt. A preview of your uploaded image will appear, confirming your selection.</p>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-900 dark:text-white" data-lang-key="step5_title">Initiate Generation</strong>
+                        <p class="pl-6 text-gray-700 dark:text-gray-400" data-lang-key="step5_desc">Once you have configured all settings and uploaded your image, click the <strong class="text-[#3c32c8]">⚡️ GENERATE</strong> button at the top of the main content area. The system will begin processing your request.</p>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-900 dark:text-white" data-lang-key="step6_title">View Your Results</strong>
+                        <p class="pl-6 text-gray-700 dark:text-gray-400" data-lang-key="step6_desc">Your generated images will appear in this area once the generation process is complete.</p>
+                    </li>
+                </ol>
+                <p class="mt-8 text-center text-gray-500 dark:text-gray-500" data-lang-key="guide_footer">We hope you enjoy creating with Paltech Hub AI!</p>
+            </div>
+
+            <!-- Results Area -->
+            <div id="results" class="flex-1 overflow-y-auto p-8 hidden">
+                <!-- Images or spinner will be dynamically inserted here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for notifications/errors -->
+    <div id="app-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl max-w-sm w-full">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4" data-lang-key="modal_notification_title">Notification</h2>
+            <p id="modal-message" class="text-gray-700 dark:text-gray-300"></p>
+            <div class="text-right mt-6">
+                <button id="modal-close-button" class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded" data-lang-key="modal_close_button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Footer -->
+    <footer class="flex-shrink-0 p-4 text-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm transition-colors duration-300">
+        <p data-lang-key="footer_text"></p>
+    </footer>
+
+    <script src="./js/image-ai.js"></script>
+</body>
+</html>
