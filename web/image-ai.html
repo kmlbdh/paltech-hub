@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paltech Hub AI</title>
+    <base href="/paltech-hub/">
     <!-- Chosen Palette: White & Deep Purple (#3c32c8) for Light Mode; Dark Gray & Deep Purple (#3c32c8) for Dark Mode -->
     <!-- Application Structure Plan: Two-column layout with a left control panel (accordions for settings) and a right content area. The right area starts with the 'How-To' guide as an empty state, which is then replaced by a progress indicator and finally the image results. This structure separates input controls from output, providing a clear, task-oriented user flow. -->
     <!-- Visualization & Content Choices: The main content is a user guide. Goal: Inform user on first load. Presentation: The guide is rendered directly as styled HTML in the main content area (empty state). Interaction: The guide is replaced by a loading state and then results upon clicking the 'Generate' button. This provides clear initial instructions without cluttering the UI once the user starts generating. Other inputs like sliders and radio buttons are used for their intuitive control over numerical and categorical options. The final result is an an image grid for easy comparison. -->
@@ -23,7 +24,7 @@
             },
         };
     </script> --> 
-    <link rel="stylesheet" type="text/css" href="./css/image-ai.css?v=0.0.1">
+    <link rel="stylesheet" type="text/css" href="/paltech/css/image-ai.css?v=0.0.1">
      
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +38,7 @@
         <div class="flex justify-between items-center w-full mb-2">
             <!-- Left side: Logo -->
             <h1 class="text-3xl font-bold text-[#3c32c8] flex items-center" dir="ltr">
-                <img src="https://www.paltechhub.com/storage/logos/artboard-19-copy-4.webp" alt="Paltech Hub Logo" class="h-10 inline-block mr-2 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/100x32/cccccc/333333?text=Paltech+Logo';"> AI
+                <img src="/paltech/sources/artboard-19-copy-4.webp" alt="Paltech Hub Logo" class="h-10 inline-block mr-2 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/100x32/cccccc/333333?text=Paltech+Logo';"> AI
             </h1>
             <!-- Right side: Back button, Theme, Language -->
             <div id="right-controls" class="flex items-center gap-4" dir="ltr">
@@ -243,6 +244,6 @@
         <p data-lang-key="footer_text"></p>
     </footer>
 
-    <script src="./js/image-ai.js"></script>
+    <script src="/paltech/js/image-ai.js"></script>
 </body>
 </html>
