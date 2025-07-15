@@ -352,6 +352,29 @@
                     <img src="${item.imageUrl}" alt="Generated Image" class="rounded-md">
                     <p class="history-item-prompt">${item.promptText}</p>
                 `;
+                const promptElement = historyItemDiv.querySelector('.history-item-prompt');
+                if (promptElement) {
+                    promptElement.addEventListener('click', () => {
+                        // Use document.execCommand for clipboard copy due to iframe restrictions
+                        const textarea = document.createElement('textarea');
+                        textarea.value = item.promptText;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        try {
+                            const successful = document.execCommand('copy');
+                            if (successful) {
+                                displayNotification('copied_to_clipboard', 2000); // Show success notification
+                            } else {
+                                console.error('Fallback: Copying text command was unsuccessful.');
+                                displayNotification('Failed to copy!', 2000, false); // Show failure notification
+                            }
+                        } catch (err) {
+                            console.error('Fallback: Oops, unable to copy', err);
+                            displayNotification('Failed to copy!', 2000, false); // Show failure notification
+                        }
+                        document.body.removeChild(textarea);
+                    });
+                }
                 historyContainer.appendChild(historyItemDiv);
             });
         }
@@ -448,8 +471,8 @@
      */
     async function load_api_workflows() {
         let wf = {
-            'flux_kontext': '/js/flux-kontext.json'
-            // 'flux_kontext': 'paltech/js/flux-kontext.json'
+            // 'flux_kontext': '/js/flux-kontext.json'
+            'flux_kontext': '/paltech/js/flux-kontext.json'
 
         }
 
