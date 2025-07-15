@@ -168,6 +168,7 @@ html[data-theme='dark'] .history-item {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: copy; /* Indicate it's clickable and copies */
 }
 
 html[data-theme='dark'] .history-item-prompt {

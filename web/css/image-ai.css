@@ -983,6 +983,7 @@ html[data-theme='dark'] .history-item {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: copy;
 }
 html[data-theme='dark'] .history-item-prompt {
   color: #9ca3af;
