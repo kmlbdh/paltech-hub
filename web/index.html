@@ -4,16 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paltech Hub AI - Home</title>
-    <base href="/paltech-hub/"> 
+    <base href="/"> 
 
-    <link rel="stylesheet" type="text/css" href="/paltech/css/index.css?v=0.0.1">
+    <link rel="stylesheet" type="text/css" href="./css/index.css?v=0.0.1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS configuration for dark mode using a selector
+        tailwind.config = {
+            darkMode: 'selector', // This tells Tailwind to look for data-theme="dark"
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        cairo: ['Cairo', 'sans-serif'], // Add Cairo to Tailwind's font family
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        /* Base styles for body */
+        html[data-theme='white'] body {
+            background-color: #ffffff; /* bg-white */
+            color: #1f2937; /* text-gray-800 */
+        }
+        /* Dark mode styles applied via data-theme="dark" on html */
+        html[data-theme='dark'] body {
+            background-color: #111827; /* bg-gray-900 */
+            color: #e5e7eb; /* text-gray-200 */
+        }
+
+        /* Apply Cairo font when language is Arabic (dir="rtl") */
+        html[dir='rtl'] body {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* Custom scrollbar for webkit browsers - Light Mode */
+        html[data-theme='white'] ::-webkit-scrollbar {
+            width: 8px;
+        }
+        html[data-theme='white'] ::-webkit-scrollbar-track {
+            background: #f3f4f6; /* bg-gray-100 */
+        }
+        html[data-theme='white'] ::-webkit-scrollbar-thumb {
+            background: #d1d5db; /* bg-gray-300 */
+            border-radius: 4px;
+        }
+        html[data-theme='white'] ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; /* bg-gray-400 */
+        }
+
+        /* Custom scrollbar for webkit browsers - Dark Mode */
+        html[data-theme='dark'] ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 4px;
+        }
+        html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+
+        /* Custom styles for header and column separation in white theme (copied from image-ai.html) */
+        html[data-theme='white'] header {
+            background-color: #F8F8F8; /* Light gray for header */
+            color: #1f2937; /* text-gray-800 */
+            border-bottom: 1px solid #d1d5db; /* A bit darker border for separation */
+        }
+        html[data-theme='white'] header .text-xs {
+            color: #1f2937; /* Ensure version text is dark gray */
+        }
+        html[data-theme='white'] header #theme-toggle,
+        html[data-theme='white'] header #language-select {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #1f2937; /* text-gray-800 */
+            border-color: #d1d5db; /* border-gray-300 */
+        }
+        html[data-theme='white'] header #theme-toggle:hover,
+        html[data-theme='white'] header #language-select:hover {
+            background-color: #d1d5db; /* hover bg-gray-300 */
+        }
+        
+        html[data-theme='white'] footer {
+            background-color: #ffffff; /* bg-white */
+            color: #1f2937; /* text-gray-800 */
+            border-top: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+
+    </style>
 </head>
 <body class="font-inter transition-colors duration-300 flex flex-col min-h-screen">
-    <!-- Global Fixed Header (Copied from image-ai.html) -->
+    <!-- Global Fixed Header -->
     <header class="flex-shrink-0 bg-white dark:bg-gray-900 shadow-md p-4 flex flex-col transition-colors duration-300 h-24">
         <!-- Top Row: Title, Theme, Language -->
         <div class="flex justify-between items-center w-full mb-2">
@@ -44,21 +130,21 @@
             <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4" data-lang-key="welcome_title">Welcome to Paltech Hub AI</h2>
             <p class="text-lg text-gray-700 dark:text-gray-300 mb-8" data-lang-key="welcome_intro">Your gateway to advanced AI image and video generation.</p>
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="image-ai.html" class="inline-block bg-[#3c32c8] hover:bg-[#2a2491] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105" data-lang-key="start_image_gen">
+                <a href="/image-ai.html" class="inline-block bg-[#3c32c8] hover:bg-[#2a2491] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105" data-lang-key="start_image_gen">
                     Start Generating Images
                 </a>
-                <a href="/image-ai.html" class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105" data-lang-key="start_video_gen">
+                <a href="/video-ai.html" class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105" data-lang-key="start_video_gen">
                     Generate AI Videos
                 </a>
             </div>
         </div>
     </main>
 
-    <!-- Simple Footer (Updated to match image-ai.html) -->
+    <!-- Simple Footer -->
     <footer class="flex-shrink-0 p-4 text-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm transition-colors duration-300">
         <p data-lang-key="footer_text"></p>
     </footer>
 
-    <script src="/paltech/js/index.js"></script>
+    <script src="./js/index.js"></script>
 </body>
 </html>
