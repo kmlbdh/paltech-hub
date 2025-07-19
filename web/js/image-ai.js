@@ -1,9 +1,7 @@
 (async (window, d, undefined) => {
     const _ = (selector, contex = d) => contex.querySelector(selector);
 
-    // const workflows = {};
-    // Load workflows immediately when the script starts.
-    const workflows = await load_api_workflows();
+    const workflows = {};
     let IS_GENERATING = false;
     let lastUploadedComfyUIName = null;
     let lastUploadedFileIdentifier = null;
@@ -32,13 +30,13 @@
     const node_status_el = _('#current-node-status');
     const display_uploaded_image_el = _("#display-uploaded-image");
     const guideContainer = _("#guide-container");
-    const themeToggle = _('#theme-toggle');
-    const themeIcon = _('#theme-icon');
-    const languageSelect = _('#language-select');
-    const historyContainer = _('#history-container');
-    const clearHistoryButton = _('#clear-history-button');
     const notificationBar = _('#notification-bar'); // New: Get notification bar element
-    const backButton = _('#back-button'); // New: Get back button element
+    
+    // Turkish WOW elements
+    const enableTurkishWowCheckbox = _('#enable-turkish-wow');
+    const turkishWowControls = _('#turkish-wow-controls');
+    const poseSelect = _('#pose-select');
+    let posesData = []; // To store the loaded poses from poses.json
 
     const SESSION_HISTORY_KEY = 'paltech_image_history';
 
@@ -95,7 +93,12 @@
             interrupted_status: "Interrupted!",
             idle_status: "ComfyUI is idle.",
             reconnect_failed: "Could not reconnect to the server. Please refresh the page.",
-            footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة."
+            footer_text: "© 2024 Paltech Hub AI v0.1. All rights reserved.",
+            copied_to_clipboard: "Copied to clipboard!",
+            turkish_wow_title: "Turkish WOW",
+            enable_turkish_wow: "Enable Turkish WOW Poses",
+            pose_select_label: "Select a Pose",
+            select_pose_placeholder: "-- Select a Pose --"
         },
         ar: {
             generation_params_title: "معلمات التوليد",
@@ -148,25 +151,111 @@
             interrupted_status: "تم الإيقاف!",
             idle_status: "ComfyUI is idle.",
             reconnect_failed: "تعذّر الاتصال بالخادم. يُرجى تحديث الصفحة.",
-            footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة."
+            footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة.",
+            copied_to_clipboard: "تم النسخ إلى الحافظة!",
+            turkish_wow_title: "تركش واو",
+            enable_turkish_wow: "تفعيل وضعيات تركش واو",
+            pose_select_label: "اختر وضعية",
+            select_pose_placeholder: "-- اختر وضعية --"
         }
     };
 
     let currentLanguage = localStorage.getItem('language') || 'ar'; // Changed default to 'ar'
+
+    async function loadSharedContent() {
+        try {
+            // Load header
+            const headerResponse = await fetch('common_header.html');
+            if (!headerResponse.ok) throw new Error('Failed to load common_header.html');
+            const headerHtml = await headerResponse.text();
+            const headerPlaceholder = _('#header-placeholder');
+            if (headerPlaceholder) {
+                headerPlaceholder.innerHTML = headerHtml;
+            }
+
+            // Load footer
+            const footerResponse = await fetch('common_footer.html');
+            if (!footerResponse.ok) throw new Error('Failed to load common_footer.html');
+            const footerHtml = await footerResponse.text();
+            const footerPlaceholder = _('#footer-placeholder');
+            console.log('Footer HTML fetched:', footerHtml); // Debugging log
+            if (footerPlaceholder) {
+                footerPlaceholder.innerHTML = footerHtml;
+                console.log('Footer placeholder innerHTML after insertion:', footerPlaceholder.innerHTML); // Debugging log
+            }
+
+            // After content is loaded, set up event listeners and language
+            setupEventListenersAndLanguage();
+
+        } catch (error) {
+            console.error('Error loading shared content:', error);
+            // Potentially display a user-friendly error message
+        }
+    }
+
+    function setupEventListenersAndLanguage() {
+        // Elements from the header (now directly in HTML via placeholder)
+        const themeToggle = _('#theme-toggle');
+        const themeIcon = _('#theme-icon');
+        const languageSelect = _('#language-select');
+        const backButton = _('#back-button');
+
+        // Theme Toggle Logic
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '💡';
+        } else {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                if (themeIcon) themeIcon.textContent = '🌙';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'white');
+                if (themeIcon) themeIcon.textContent = '💡';
+            }
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'white') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    if (themeIcon) themeIcon.textContent = '🌙';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'white');
+                    localStorage.setItem('theme', 'white');
+                    if (themeIcon) themeIcon.textContent = '💡';
+                }
+            });
+        }
+
+        // Language Switcher Logic
+        if (languageSelect) {
+            languageSelect.addEventListener('change', (event) => {
+                setLanguage(event.target.value);
+            });
+        }
+
+        // Back button logic
+        if (backButton) {
+            backButton.addEventListener('click', () => window.location.href = 'index.html');
+        }
+
+        // Initial UI setup
+        setLanguage(currentLanguage); // Set language on initial load
+        renderHistory(); // Render history on initial load
+        setupWebSocket(); // Keep WebSocket connected on page load for status updates
+        // Ensure guide is visible on initial load
+        if (guideContainer) guideContainer.classList.remove('hidden');
+        if (results) results.classList.add('hidden');
+    }
 
     function setLanguage(langCode) {
         currentLanguage = langCode;
         localStorage.setItem('language', langCode);
         document.documentElement.lang = langCode;
         document.documentElement.dir = (langCode === 'ar') ? 'rtl' : 'ltr';
-
-        // The logo image already has mr-2, which is correct for LTR.
-        // In RTL, the logo will be on the right, and the "AI" text will be on its left.
-        // The mr-2 will then act as a margin-left in RTL, which is still correct.
-        // No dynamic margin adjustment needed for the logo image.
-
-        // The right-controls div now has dir="ltr" in HTML, so its internal order is always LTR.
-        // No dynamic flex-row-reverse needed here.
 
         // Update all elements with data-lang-key
         d.querySelectorAll('[data-lang-key]').forEach(element => {
@@ -180,6 +269,12 @@
                     element.innerHTML = languages[langCode][key];
                 }
             }
+            // Debugging log for footer text
+            if (key === 'footer_text') {
+                console.log(`setLanguage: Found footer element with data-lang-key="footer_text".`);
+                console.log(`setLanguage: Attempting to set innerHTML to:`, languages[langCode][key]);
+                // You can inspect element.innerHTML here after assignment if needed
+            }
         });
         
         // Special handling for the guide container's strong tag in step5_desc
@@ -189,6 +284,7 @@
         }
 
         // Update the language select dropdown
+        const languageSelect = _('#language-select'); // Re-get it as it's now in loaded content
         if (languageSelect) {
             languageSelect.value = langCode;
         }
@@ -198,7 +294,7 @@
     // Function to display modal messages (for critical errors)
     function displayModalMessage(messageKey, show = true, isLangKey = true) {
         if (modalMessageEl && modal) {
-            let messageText = isLangKey && languages[currentLanguage] ? languages[currentLanguage][messageKey] : messageKey;
+            let messageText = isLangKey ? languages[currentLanguage][messageKey] : messageKey;
             modalMessageEl.innerHTML = messageText;
             if (show) modal.classList.remove('hidden');
             else modal.classList.add('hidden');
@@ -208,7 +304,7 @@
     // New function to display temporary notifications
     function displayNotification(messageKey, duration = 5000, isLangKey = true) {
         if (notificationBar) {
-            let messageText = isLangKey && languages[currentLanguage] ? languages[currentLanguage][messageKey] : messageKey;
+            let messageText = isLangKey ? languages[currentLanguage][messageKey] : messageKey;
             notificationBar.textContent = messageText;
             notificationBar.classList.add('show'); // Show the notification bar
 
@@ -231,12 +327,22 @@
         if (generate) toggleDisplay(generate, !isGenerating);
         if (interrupt_button) toggleDisplay(interrupt_button, isGenerating);
 
-        const inputs = [seed_input, prompt_input, batch_size_input, img_height_input, img_width_input, image_input, is_random_input];
+        const inputs = [
+            seed_input, prompt_input, batch_size_input, img_height_input, 
+            img_width_input, image_input, is_random_input,
+            // Disable Turkish WOW controls if generating
+            enableTurkishWowCheckbox, poseSelect
+        ];
         inputs.forEach(input => { if (input) input.disabled = isGenerating; });
         
         if (!isGenerating && seed_input && is_random_input) {
             seed_input.disabled = is_random_input.checked;
         }
+        // Also manage the poseSelect based on enableTurkishWowCheckbox state
+        if (!isGenerating && enableTurkishWowCheckbox && poseSelect) {
+            poseSelect.disabled = !enableTurkishWowCheckbox.checked;
+        }
+
         updateProgress(0); // Reset progress bar
         if(node_status_el) node_status_el.innerText = isGenerating ? languages[currentLanguage].processing_status : '';
 
@@ -338,6 +444,7 @@
     }
 
     function renderHistory() {
+        const historyContainer = _('#history-container'); // Re-get it as it's now in loaded content
         if (!historyContainer) return;
         const history = loadHistory();
         historyContainer.innerHTML = ''; // Clear existing history
@@ -465,43 +572,80 @@
         };
     }
     
-        /**
+    /**
      * Loads predefined ComfyUI API workflows from JSON files.
      * @returns {Promise<Object>} An object containing loaded workflow JSONs, keyed by their names.
      */
     async function load_api_workflows() {
-        let wf = {
+        let workflowPaths = {
             // 'flux_kontext': '/js/flux-kontext.json'
             'flux_kontext': '/paltech/js/flux-kontext.json'
 
         }
 
-        for (let key in wf) {
+        for (let key in workflowPaths) {
             try {
-                let response = await fetch(wf[key]);
+                let response = await fetch(workflowPaths[key]);
                 if (!response.ok) {
-                    throw new Error(`Failed to load workflow ${wf[key]}: ${response.status} ${response.statusText}`);
+                    throw new Error(`Failed to load workflow ${workflowPaths[key]}: ${response.status} ${response.statusText}`);
                 }
-                wf[key] = await response.json();
+                workflows[key] = await response.json(); // Store the loaded JSON in the global 'workflows' object
+                console.log(`Workflow ${key} loaded successfully:`, workflows[key]);
             } catch (error) {
                 console.error(`Error loading workflow ${key}:`, error);
-                wf[key] = {}; // Set to empty object on error
-                displayModalMessage(`Failed to load workflow: ${key}. Please check the path and server status.`, true);
+                workflows[key] = {}; // Set to empty object on error
+                displayModalMessage(`Failed to load workflow: ${key}. Please check the path and server status.`, true, false);
             }
         }
-        return wf;
+        return workflows; // Return the workflows object
     }
 
+    /**
+     * Loads poses data from poses.json and populates the pose selection dropdown.
+     */
+    async function loadPoses() {
+        try {
+            const response = await fetch('/poses.json'); // Assuming poses.json is at the root or accessible path
+            if (!response.ok) {
+                throw new Error(`Failed to load poses.json: ${response.status} ${response.statusText}`);
+            }
+            posesData = await response.json();
+            populatePoseDropdown();
+        } catch (error) {
+            console.error('Error loading poses data:', error);
+            displayModalMessage('Failed to load pose data. Please check the poses.json file.', true, false);
+        }
+    }
+
+    /**
+     * Populates the pose selection dropdown with data from posesData.
+     */
+    function populatePoseDropdown() {
+        if (!poseSelect) return;
+        // Clear existing options, but keep the placeholder
+        poseSelect.innerHTML = `<option value="" data-lang-key="select_pose_placeholder">${languages[currentLanguage].select_pose_placeholder}</option>`;
+        
+        posesData.forEach((pose, index) => {
+            const option = d.createElement('option');
+            option.value = index; // Use index to easily retrieve the full object later
+            option.textContent = pose.name;
+            poseSelect.appendChild(option);
+        });
+    }
+
+    // Event listeners
     if (generate) {
         generate.addEventListener('click', async () => {
             if (IS_GENERATING) return;
             
             updateUIForGenerationState(true); // Set state to generating, which hides guide and shows spinner
-            // if (!prompt_input || !img_width_input || !img_height_input || !batch_size_input || !seed_input) {
-            //     displayModalMessage('Please fill in all required fields.', true, false);
-            //     updateUIForGenerationState(false); // Reset state if validation fails
-            //     return;
-            // }
+
+            // Check if workflows.flux_kontext is loaded
+            if (!workflows || !workflows.flux_kontext) {
+                displayModalMessage('Workflow not loaded. Please ensure the workflow JSON is accessible and try again.', true, false);
+                updateUIForGenerationState(false);
+                return;
+            }
 
             let wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext)); // Use a copy
             
@@ -521,7 +665,7 @@
                 const currentFileIdentifier = `${uploadedImageFile.name}-${uploadedImageFile.size}-${uploadedImageFile.lastModified}`;
                 if (currentFileIdentifier !== lastUploadedFileIdentifier) {
                         try {
-                        const uploadResult = await fetch('/upload/image', {
+                        const uploadResult = await fetch('/upload/image', { // This path should be correct as it's a ComfyUI API endpoint
                             method: 'POST',
                             body: (() => {
                                 const fd = new FormData();
@@ -541,7 +685,6 @@
                 if(wf_to_use['357']) wf_to_use['357'].inputs.image = lastUploadedComfyUIName;
             } else {
                 // If no image is uploaded, use a blank image or remove the node if not needed
-                // For now, we'll assume a default blank image is always available or the node is optional
                 if(wf_to_use['357']) wf_to_use['357'].inputs.image = "default_blank.png";
             }
 
@@ -554,59 +697,50 @@
         });
     }
 
-    // Other event listeners
     if (interrupt_button) interrupt_button.addEventListener('click', () => fetch('/interrupt', { method: 'POST' }));
     if (image_size_radioBtn) image_size_radioBtn.addEventListener('change', e => { if (e.target.name === 'image-size') setImageDimensions(e.target.value); });
     if(image_input) image_input.addEventListener('change', function() { handleImagePreview(this.files ? this.files[0] : null); });
     if(modalCloseButton) modalCloseButton.addEventListener('click', () => displayModalMessage('', false));
     if(clearHistoryButton) clearHistoryButton.addEventListener('click', clearHistory);
-    if(backButton) backButton.addEventListener('click', () => window.location.href = 'index.html'); // New: Back button logic
     
-    // Theme Toggle Logic
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '💡';
-    } else {
-        // Check system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            if (themeIcon) themeIcon.textContent = '🌙';
-        } else {
-            document.documentElement.setAttribute('data-theme', 'white');
-            if (themeIcon) themeIcon.textContent = '💡';
-        }
-    }
-
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme');
-            if (theme === 'white') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                if (themeIcon) themeIcon.textContent = '🌙';
-            } else {
-                document.documentElement.setAttribute('data-theme', 'white');
-                localStorage.setItem('theme', 'white');
-                if (themeIcon) themeIcon.textContent = '💡';
+    // Turkish WOW event listeners
+    if (enableTurkishWowCheckbox) {
+        enableTurkishWowCheckbox.addEventListener('change', () => {
+            if (turkishWowControls) {
+                turkishWowControls.style.display = enableTurkishWowCheckbox.checked ? 'block' : 'none';
+                // Disable/enable poseSelect based on checkbox state
+                poseSelect.disabled = !enableTurkishWowCheckbox.checked;
+                // Clear selection if disabled
+                if (!enableTurkishWowCheckbox.checked && poseSelect) {
+                    poseSelect.value = "";
+                }
             }
         });
     }
 
-    // Language Switcher Logic
-    if (languageSelect) {
-        languageSelect.addEventListener('change', (event) => {
-            setLanguage(event.target.value);
+    if (poseSelect) {
+        poseSelect.addEventListener('change', () => {
+            const selectedIndex = poseSelect.value;
+            if (selectedIndex !== "" && posesData[selectedIndex]) {
+                prompt_input.value = posesData[selectedIndex].description;
+            } else if (selectedIndex === "") {
+                prompt_input.value = ""; // Clear prompt if placeholder is selected
+            }
         });
     }
 
-    // Initial UI setup
-    setImageDimensions(_('input[name="image-size"]:checked')?.value || 'square');
-    setLanguage(currentLanguage); // Set language on initial load
-    renderHistory(); // Render history on initial load
-    setupWebSocket(); // Keep WebSocket connected on page load for status updates
+    // Call loadSharedContent when the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadSharedContent(); // Load header/footer first
+        await load_api_workflows(); // Then load workflows
+        await loadPoses(); // Then load poses
+        // Initial UI setup that depends on all content being loaded
+        setImageDimensions(_('input[name="image-size"]:checked')?.value || 'square');
+        // setLanguage is called by loadSharedContent
+        // renderHistory is called by setLanguage
+        // setupWebSocket is called by loadSharedContent
+        // guide/results visibility is handled by updateUIForGenerationState
+        updateUIForGenerationState(false); // Set initial state to idle
+    });
 
-    // Ensure guide is visible on initial load
-    if (guideContainer) guideContainer.classList.remove('hidden');
-    if (results) results.classList.add('hidden');
 })(window, document);
