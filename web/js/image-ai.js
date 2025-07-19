@@ -713,9 +713,10 @@
                 turkishWowControls.style.display = enableTurkishWowCheckbox.checked ? 'block' : 'none';
                 // Disable/enable poseSelect based on checkbox state
                 poseSelect.disabled = !enableTurkishWowCheckbox.checked;
-                // Clear selection if disabled
-                if (!enableTurkishWowCheckbox.checked && poseSelect) {
+                // Clear selection and prompt if disabled
+                if (!enableTurkishWowCheckbox.checked) { // We removed '&& poseSelect' as prompt_input always exists.
                     poseSelect.value = "";
+                    prompt_input.value = ""; // This line clears the prompt textarea.
                 }
             }
         });
