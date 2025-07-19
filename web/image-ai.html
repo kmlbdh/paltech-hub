@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paltech Hub AI</title>
-    <base href="/paltech-hub/">
     <!-- Chosen Palette: White & Deep Purple (#3c32c8) for Light Mode; Dark Gray & Deep Purple (#3c32c8) for Dark Mode -->
     <!-- Application Structure Plan: Two-column layout with a left control panel (accordions for settings) and a right content area. The right area starts with the 'How-To' guide as an empty state, which is then replaced by a progress indicator and finally the image results. This structure separates input controls from output, providing a clear, task-oriented user flow. -->
     <!-- Visualization & Content Choices: The main content is a user guide. Goal: Inform user on first load. Presentation: The guide is rendered directly as styled HTML in the main content area (empty state). Interaction: The guide is replaced by a loading state and then results upon clicking the 'Generate' button. This provides clear initial instructions without cluttering the UI once the user starts generating. Other inputs like sliders and radio buttons are used for their intuitive control over numerical and categorical options. The final result is an an image grid for easy comparison. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-     <script>
+    <script>
         // Tailwind CSS configuration for dark mode using a selector
         tailwind.config = {
             darkMode: 'selector', // This tells Tailwind to look for data-theme="dark"
@@ -23,37 +21,424 @@
                 },
             },
         };
-    </script> --> 
-    <link rel="stylesheet" type="text/css" href="/paltech/css/image-ai.css?v=0.0.1">
-     
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base styles for body */
+        html[data-theme='white'] body {
+            background-color: #ffffff; /* bg-white */
+            color: #1f2937; /* text-gray-800 */
+        }
+        /* Dark mode styles applied via data-theme="dark" on html */
+        html[data-theme='dark'] body {
+            background-color: #111827; /* bg-gray-900 */
+            color: #e5e7eb; /* text-gray-200 */
+        }
+
+        /* Apply Cairo font when language is Arabic (dir="rtl") */
+        html[dir='rtl'] body {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* Custom scrollbar for webkit browsers - Light Mode */
+        html[data-theme='white'] ::-webkit-scrollbar {
+            width: 8px;
+        }
+        html[data-theme='white'] ::-webkit-scrollbar-track {
+            background: #f3f4f6; /* bg-gray-100 */
+        }
+        html[data-theme='white'] ::-webkit-scrollbar-thumb {
+            background: #d1d5db; /* bg-gray-300 */
+            border-radius: 4px;
+        }
+        html[data-theme='white'] ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; /* bg-gray-400 */
+        }
+
+        /* Custom scrollbar for webkit browsers - Dark Mode */
+        html[data-theme='dark'] ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 4px;
+        }
+        html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+
+        /* Custom styling for range input */
+        html[data-theme='white'] input[type=range] {
+            background: #e5e7eb; /* bg-gray-200 */
+        }
+        html[data-theme='dark'] input[type=range] {
+            background: #374151; /* bg-gray-700 */
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type=range]:hover {
+            opacity: 1;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3c32c8; /* main accent color */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3c32c8; /* main accent color */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        /* Custom styling for radio buttons */
+        .image-size-radio {
+            display: none;
+        }
+        html[data-theme='white'] .image-size-label {
+            border: 2px solid #d1d5db; /* bg-gray-300 */
+            background-color: #ffffff; /* bg-white */
+            color: #1f2937; /* text-gray-800 */
+        }
+        html[data-theme='white'] .image-size-radio:checked + .image-size-label {
+            background-color: #e0e7ff; /* light blue tint */
+        }
+        html[data-theme='white'] .image-size-label:hover {
+            background-color: #e5e7eb; /* bg-gray-200 */
+        }
+
+        html[data-theme='dark'] .image-size-label {
+            border-color: #374151; /* bg-gray-700 */
+            background-color: #111827; /* bg-gray-900 */
+            color: #e5e7eb; /* text-gray-200 */
+        }
+        html[data-theme='dark'] .image-size-radio:checked + .image-size-label {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+        html[data-theme='dark'] .image-size-label:hover {
+            background-color: #374151; /* bg-gray-700 */
+        }
+
+        .image-size-label {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.25rem;
+            height: 80px; /* Fixed height */
+        }
+        
+        html[data-theme='white'] .icon-shape {
+            background-color: #9ca3af; /* gray-400 */
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border for light theme */
+        }
+        html[data-theme='dark'] .icon-shape {
+            background-color: #4b5563; /* gray-600 */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for dark theme */
+        }
+        .icon-shape {
+            border-radius: 2px;
+        }
+
+        #display-uploaded-image {
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height: 150px;
+        }
+        /* Specific styles for display-uploaded-image */
+        html[data-theme='white'] #display-uploaded-image {
+            background-color: #f9fafb; /* bg-gray-50 */
+            border-color: #d1d5db; /* border-gray-300 */
+        }
+        html[data-theme='dark'] #display-uploaded-image {
+            background-color: #1f2937; /* bg-gray-800/50 */
+            border-color: #374151; /* border-gray-700 */
+        }
+
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+            background-color: #f9fafb; /* gray-50 */
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        html[data-theme='dark'] .history-item {
+            border-bottom: 1px solid #374151; /* gray-700 */
+            background-color: #1f2937; /* gray-800 */
+        }
+
+        .history-item img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .history-item-prompt {
+            flex-grow: 1;
+            font-size: 0.875rem; /* text-sm */
+            color: #4b5563; /* gray-600 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: copy; /* Indicate it's clickable and copies */
+        }
+
+        html[data-theme='dark'] .history-item-prompt {
+            color: #9ca3af; /* gray-400 */
+        }
+
+        /* Notification Bar Styles */
+        #notification-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #10b981; /* Emerald Green - bg-emerald-500 */
+            color: white;
+            text-align: center;
+            padding: 0.75rem;
+            z-index: 1000;
+            transform: translateY(-100%); /* Start off-screen */
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #notification-bar.show {
+            transform: translateY(0); /* Slide in */
+            opacity: 1;
+        }
+
+        /* Force LTR for the prompt input */
+        #prompt-input {
+            direction: ltr;
+        }
+
+        /* Custom styles for header */
+        html[data-theme='white'] header {
+            background-color: #ffffff; /* bg-white (changed from #F8F8F8) */
+            color: #1f2937; /* text-gray-800 */
+            border-bottom: 1px solid #d1d5db; /* A bit darker border for separation */
+        }
+        html[data-theme='dark'] header {
+            background-color: #111827; /* bg-gray-900 */
+            color: #e5e7eb; /* text-gray-200 */
+            border-bottom: 1px solid #374151; /* Darker border for dark theme */
+        }
+        html[data-theme='white'] header .text-xs {
+            color: #1f2937; /* Ensure version text is dark gray */
+        }
+        html[data-theme='white'] header #theme-toggle,
+        html[data-theme='white'] header #language-select,
+        html[data-theme='white'] header #back-button { /* Added back-button */
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #1f2937; /* text-gray-800 */
+            border-color: #d1d5db; /* border-gray-300 */
+        }
+        html[data-theme='white'] header #theme-toggle:hover,
+        html[data-theme='white'] header #language-select:hover,
+        html[data-theme='white'] header #back-button:hover { /* Added back-button */
+            background-color: #d1d5db; /* hover bg-gray-300 */
+        }
+        /* Specific styles for header buttons in dark mode */
+        html[data-theme='dark'] header #theme-toggle,
+        html[data-theme='dark'] header #language-select,
+        html[data-theme='dark'] header #back-button { /* Added back-button */
+            background-color: #374151; /* Darker gray for buttons in dark mode */
+            color: #e5e7eb; /* Light text for buttons in dark mode */
+            border-color: #4b5563; /* Darker border for buttons in dark mode */
+        }
+        html[data-theme='dark'] header #theme-toggle:hover,
+        html[data-theme='dark'] header #language-select:hover,
+        html[data-theme='dark'] header #back-button:hover { /* Added back-button */
+            background-color: #4b5563; /* Even darker gray on hover in dark mode */
+        }
+
+
+        /* Custom styles for aside and main */
+        html[data-theme='white'] aside {
+            background-color: #ffffff; /* bg-white */
+            border-right: 1px solid #d1d5db; /* Darker border for column separation */
+        }
+        html[data-theme='dark'] aside {
+            background-color: #111827; /* bg-gray-900 */
+            border-right: 1px solid #374151; /* Darker border for dark theme */
+        }
+
+        /* Differentiate main content area in white theme */
+        html[data-theme='white'] main {
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        html[data-theme='dark'] main {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+
+        /* Differentiate guide-container in white theme (matches main) */
+        html[data-theme='white'] #guide-container {
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        html[data-theme='dark'] #guide-container {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+
+        /* Custom styles for sticky button container */
+        html[data-theme='white'] .sticky-bottom-buttons {
+            background-color: #ffffff; /* bg-white */
+            border-top: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        html[data-theme='dark'] .sticky-bottom-buttons {
+            background-color: #111827; /* bg-gray-900 */
+            border-top: 1px solid #374151; /* border-gray-700 */
+        }
+        
+        html[data-theme='white'] details .pl-4.pt-4.border-l-2 {
+            border-left-color: #9CA3AF; /* Darker gray for accordion left borders */
+        }
+
+        /* Custom styles for footer */
+        html[data-theme='white'] footer {
+            background-color: #ffffff; /* bg-white */
+            color: #1f2937; /* text-gray-800 */
+            border-top: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        html[data-theme='dark'] footer {
+            background-color: #111827; /* bg-gray-900 */
+            color: #e5e7eb; /* text-gray-200 */
+            border-top: 1px solid #374151; /* border-gray-700 */
+        }
+
+        /* Text color adjustments for various elements */
+        html[data-theme='white'] .text-gray-900 { color: #1f2937; } /* Ensure dark text for headings etc. in light mode */
+        html[data-theme='dark'] .text-gray-900 { color: #e5e7eb; } /* Ensure light text for headings etc. in dark mode */
+
+        html[data-theme='white'] .text-gray-700 { color: #374151; } /* General text in light mode */
+        html[data-theme='dark'] .text-gray-700 { color: #9ca3af; } /* General text in dark mode */
+
+        html[data-theme='white'] .text-gray-600 { color: #4b5563; } /* Labels, weaker text in light mode */
+        html[data-theme='dark'] .text-gray-600 { color: #9ca3af; } /* Labels, weaker text in dark mode */
+
+        html[data-theme='white'] .text-gray-500 { color: #6b7280; } /* Placeholders, very weak text in light mode */
+        html[data-theme='dark'] .text-gray-500 { color: #6b7280; } /* Placeholders, very weak text in dark mode */
+
+        html[data-theme='white'] .text-gray-800 { color: #1f2937; } /* Input text, etc. in light mode */
+        html[data-theme='dark'] .text-gray-800 { color: #e5e7eb; } /* Input text, etc. in dark mode */
+
+        /* Specific overrides for strong tags within guide */
+        html[data-theme='white'] #guide-container strong {
+            color: #1f2937; /* Dark text for strong in light mode */
+        }
+        html[data-theme='dark'] #guide-container strong {
+            color: #e5e7eb; /* Light text for strong in dark mode */
+        }
+
+        /* Specific styles for inputs and textareas */
+        html[data-theme='white'] input[type="text"],
+        html[data-theme='white'] input[type="number"],
+        html[data-theme='white'] textarea {
+            background-color: #f9fafb; /* bg-gray-50 */
+            color: #1f2937; /* text-gray-800 */
+            border-color: #d1d5db; /* border-gray-300 */
+        }
+
+        html[data-theme='dark'] input[type="text"],
+        html[data-theme='dark'] input[type="number"],
+        html[data-theme='dark'] textarea {
+            background-color: #1f2937; /* bg-gray-800 */
+            color: #e5e7eb; /* text-gray-200 */
+            border-color: #374151; /* border-gray-700 */
+        }
+
+        /* Specific styles for modal close button */
+        html[data-theme='white'] #modal-close-button {
+            background-color: #d1d5db; /* bg-gray-300 */
+            color: #1f2937; /* text-gray-800 */
+        }
+        html[data-theme='white'] #modal-close-button:hover {
+            background-color: #9ca3af; /* hover:bg-gray-400 */
+        }
+
+        html[data-theme='dark'] #modal-close-button {
+            background-color: #4b5563; /* bg-gray-600 */
+            color: #e5e7eb; /* text-gray-200 */
+        }
+        html[data-theme='dark'] #modal-close-button:hover {
+            background-color: #6b7280; /* hover:bg-gray-500 */
+        }
+
+        /* Specific styles for "Select Image" button (label for input type file) */
+        html[data-theme='white'] label[for="image-input"] {
+            background-color: #d1d5db; /* bg-gray-300 */
+            color: #1f2937; /* text-gray-800 */
+        }
+        html[data-theme='white'] label[for="image-input"]:hover {
+            background-color: #9ca3af; /* hover:bg-gray-400 */
+        }
+        html[data-theme='dark'] label[for="image-input"] {
+            background-color: #4b5563; /* bg-gray-700 */
+            color: #e5e7eb; /* text-gray-200 */
+        }
+        html[data-theme='dark'] label[for="image-input"]:hover {
+            background-color: #6b7280; /* hover:bg-gray-600 */
+        }
+
+        /* Specific styles for the random seed checkbox */
+        #is-random {
+            -webkit-appearance: checkbox; /* Ensure standard checkbox appearance */
+            appearance: checkbox; /* Ensure standard checkbox appearance */
+            height: 16px; /* Standard size */
+            width: 16px; /* Standard size */
+            border-radius: 3px; /* Slightly rounded corners */
+            border: 1px solid; /* Add a border */
+            cursor: pointer;
+            vertical-align: middle; /* Align with text */
+            margin-right: 0.25rem; /* Small margin to separate from text */
+            accent-color: #3c32c8; /* This sets the color when checked */
+        }
+
+        html[data-theme='white'] #is-random {
+            border-color: #9ca3af; /* Gray border for unchecked in light mode */
+            background-color: #ffffff; /* White background for unchecked in light mode */
+        }
+        html[data-theme='dark'] #is-random {
+            border-color: #6b7280; /* Darker gray border for unchecked in dark mode */
+            background-color: #1f2937; /* Dark background for unchecked in dark mode */
+        }
+        
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body class="font-inter transition-colors duration-300 flex flex-col h-screen">
+<body class="font-inter transition-colors duration-300 flex flex-col">
 
     <!-- Global Fixed Header -->
-    <header class="flex-shrink-0 bg-white dark:bg-gray-900 shadow-md p-4 flex flex-col transition-colors duration-300 h-24">
-        <!-- Top Row: Title, Theme, Language -->
-        <div class="flex justify-between items-center w-full mb-2">
-            <!-- Left side: Logo -->
-            <h1 class="text-3xl font-bold text-[#3c32c8] flex items-center" dir="ltr">
-                <img src="/paltech/sources/artboard-19-copy-4.webp" alt="Paltech Hub Logo" class="h-10 inline-block mr-2 align-middle" onerror="this.onerror=null;this.src='https://placehold.co/100x32/cccccc/333333?text=Paltech+Logo';"> AI
-            </h1>
-            <!-- Right side: Back button, Theme, Language -->
-            <div id="right-controls" class="flex items-center gap-4" dir="ltr">
-                <button id="back-button" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                </button>
-                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300">
-                    <span id="theme-icon" class="text-xl">💡</span>
-                </button>
-                <select id="language-select" class="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600">
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                </select>
-            </div>
-        </div>
+    <header class="flex-shrink-0 shadow-md p-4 flex flex-col transition-colors duration-300 h-24">
+        <!-- Placeholder for common header content -->
+        <div id="header-placeholder"></div>
 
         <!-- Bottom Row: Progress Bar and Node Status -->
         <div class="w-full bg-gray-300 dark:bg-gray-700 h-1">
@@ -66,11 +451,11 @@
     <div id="notification-bar" class="text-sm"></div>
 
     <!-- Main Content Wrapper: Contains both sidebar and main content area -->
-    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+    <div class="flex flex-col md:flex-row flex-1 md:overflow-y-auto">
 
         <!-- Left Sidebar: Controls -->
-        <aside class="w-full md:w-1/3 bg-white dark:bg-gray-900 p-6 transition-colors duration-300 flex flex-col min-h-0 md:max-h=full">
-            <div class="space-y-6 flex-grow overflow-y-auto pb-20"> <!-- Added flex-grow and pb-20 for sticky button -->
+        <aside class="w-full md:w-1/3 p-6 transition-colors duration-300 flex flex-col min-h-0 md:max-h=full">
+            <div class="space-y-6 flex-grow pb-20">
                 <!-- Generation Params Accordion -->
                 <details class="space-y-4" open>
                     <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="generation_params_title">Generation Params</summary>
@@ -78,15 +463,16 @@
                         <!-- Seed and Random controls - Moved to top -->
                         <div class="flex items-center gap-4">
                             <label for="main-seed" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="seed_label">Seed</label>
-                            <input id="main-seed" class="bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md w-32 px-2 py-1 text-center text-gray-800 dark:text-gray-200" type="text" data-lang-key="seed_placeholder" placeholder="Seed" value="0">
+                            <input id="main-seed" class="rounded-md w-32 px-2 py-1 text-center" type="text" data-lang-key="seed_placeholder" placeholder="Seed" value="0">
                             <label class="flex items-center gap-2 cursor-pointer text-gray-800 dark:text-gray-200">
-                                <input id="is-random" class="form-checkbox bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded text-[#3c32c8] focus:ring-[#3c32c8]" type="checkbox" checked>
+                                <!-- Updated Tailwind classes for the checkbox -->
+                                <input id="is-random" type="checkbox" checked>
                                 <span data-lang-key="random_checkbox">Random</span>
                             </label>
                         </div>
                         <div>
                             <label for="batch-size-input" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" data-lang-key="images_to_generate_label">Images to generate</label>
-                            <input id="batch-size-input" type="range" min="1" max="4" value="1" step="1" class="bg-gray-200 dark:bg-gray-700">
+                            <input id="batch-size-input" type="range" min="1" max="4" value="1" step="1">
                             <div class="flex justify-between text-xs text-gray-500 dark:text-gray-500 mt-1">
                                 <span>1</span>
                                 <span>2</span>
@@ -122,11 +508,11 @@
                             <div class="mt-4 grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="image-height" class="block text-xs font-medium text-gray-500 dark:text-gray-400" data-lang-key="height_label">Height</label>
-                                    <input id="image-height" type="number" value="1024" class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-center text-gray-800 dark:text-gray-200">
+                                    <input id="image-height" type="number" value="1024" class="mt-1 block w-full rounded-md shadow-sm text-center">
                                 </div>
                                 <div>
                                     <label for="image-width" class="block text-xs font-medium text-gray-500 dark:text-gray-400" data-lang-key="width_label">Width</label>
-                                    <input id="image-width" type="number" value="1024" class="mt-1 block w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-center text-gray-800 dark:text-gray-200">
+                                    <input id="image-width" type="number" value="1024" class="mt-1 block w-full rounded-md shadow-sm text-center">
                                 </div>
                             </div>
                         </div>
@@ -136,7 +522,24 @@
                     <details class="space-y-4" open>
                         <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="prompt_title">Prompt</summary>
                         <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700">
-                            <textarea id="prompt-input" rows="5" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-md shadow-sm p-2 text-gray-800 dark:text-gray-200" data-lang-key="prompt_placeholder" placeholder="Add prompt..."></textarea>
+                            <textarea id="prompt-input" rows="5" class="w-full rounded-md shadow-sm p-2" data-lang-key="prompt_placeholder" placeholder="Add prompt..."></textarea>
+                        </div>
+                    </details>
+
+                    <!-- Turkish WOW Poses Accordion -->
+                    <details class="space-y-4">
+                        <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="turkish_wow_title">Turkish WOW</summary>
+                        <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-4">
+                            <label class="flex items-center gap-2 cursor-pointer text-gray-800 dark:text-gray-200">
+                                <input id="enable-turkish-wow" type="checkbox">
+                                <span data-lang-key="enable_turkish_wow">Enable Turkish WOW Poses</span>
+                            </label>
+                            <div id="turkish-wow-controls" class="space-y-4" style="display: none;">
+                                <label for="pose-select" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="pose_select_label">Select a Pose</label>
+                                <select id="pose-select" class="w-full p-2 rounded-md bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200">
+                                    <option value="" data-lang-key="select_pose_placeholder">-- Select a Pose --</option>
+                                </select>
+                            </div>
                         </div>
                     </details>
 
@@ -145,12 +548,13 @@
                         <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="image_upload_title">Image To Upload</summary>
                         <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-4">
                             <div class="flex justify-center">
-                                <label for="image-input" class="cursor-pointer bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-md" data-lang-key="select_image_button">
+                                <!-- The text "Select Image" is on this label and is translated by JS -->
+                                <label for="image-input" class="cursor-pointer font-semibold py-2 px-4 rounded-md" data-lang-key="select_image_button">
                                     Select Image
                                 </label>
                                 <input type="file" id="image-input" class="hidden" accept="image/png, image/jpeg, image/webp">
                             </div>
-                            <div id="display-uploaded-image" class="w-full border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center">
+                            <div id="display-uploaded-image" class="w-full border-2 border-dashed rounded-lg flex items-center justify-center">
                                 <span class="text-gray-500 dark:text-gray-400" data-lang-key="image_preview_placeholder">Image Preview</span>
                             </div>
                         </div>
@@ -171,7 +575,7 @@
                     </details>
             </div>
             <!-- New sticky container for Generate/Interrupt buttons -->
-            <div class="sticky bottom-0 w-full p-4 bg-white dark:bg-gray-900 shadow-lg border-t border-gray-200 dark:border-gray-700 z-10 flex flex-col gap-4">
+            <div class="sticky bottom-0 w-full p-4 shadow-lg z-10 flex flex-col gap-4 sticky-bottom-buttons">
                 <button id="generate" class="bg-[#3c32c8] hover:bg-[#2a2491] text-white font-bold py-3 px-6 rounded-md flex items-center justify-center gap-2 transition-colors w-full">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     <span data-lang-key="generate_button">Generate</span>
@@ -184,9 +588,9 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 md:w-2/3 flex flex-col bg-white dark:bg-gray-800 min-h-0 overflow-y-auto transition-colors duration-300 p-8">
+        <main class="flex-1 md:w-2/3 flex flex-col min-h-0 transition-colors duration-300 p-8">
             <!-- Initial State: How-To Guide -->
-            <div id="guide-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-900 p-8 rounded-lg shadow-md dark:shadow-xl">
+            <div id="guide-container" class="max-w-4xl mx-auto p-8 rounded-lg shadow-md dark:shadow-xl">
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4" data-lang-key="guide_title">How to Generate Your AI Images</h2>
                 <p class="text-gray-700 dark:text-gray-400 mb-6" data-lang-key="guide_intro">Welcome to Paltech Hub AI! Follow these steps to generate your unique images. This tool leverages the Flux Kontext Dev model, which intelligently integrates your provided image into new scenes and backgrounds based on your creative prompts.</p>
                 
@@ -222,7 +626,7 @@
             </div>
 
             <!-- Results Area -->
-            <div id="results" class="flex-1 overflow-y-auto p-8 hidden">
+            <div id="results" class="flex-1 p-8 hidden">
                 <!-- Images or spinner will be dynamically inserted here -->
             </div>
         </main>
@@ -234,16 +638,17 @@
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4" data-lang-key="modal_notification_title">Notification</h2>
             <p id="modal-message" class="text-gray-700 dark:text-gray-300"></p>
             <div class="text-right mt-6">
-                <button id="modal-close-button" class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded" data-lang-key="modal_close_button">Close</button>
+                <button id="modal-close-button" class="rounded" data-lang-key="modal_close_button">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Simple Footer -->
-    <footer class="flex-shrink-0 p-4 text-center bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm transition-colors duration-300">
-        <p data-lang-key="footer_text"></p>
+    <footer class="flex-shrink-0 p-4 text-center shadow-md text-sm transition-colors duration-300">
+        <!-- Placeholder for common footer content -->
+        <div id="footer-placeholder"></div>
     </footer>
 
-    <script src="/paltech/js/image-ai.js"></script>
+    <script src="./js/image-ai.js"></script>
 </body>
 </html>
