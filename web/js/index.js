@@ -12,7 +12,7 @@
             welcome_intro: "Your gateway to advanced AI image and video generation.",
             start_image_gen: "Generate AI Images",
             start_video_gen: "Generate AI Videos",
-            footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة." // Updated footer text
+            footer_text: "© 2024 Paltech Hub AI v0.1. All rights reserved." // Updated footer text
         },
         ar: {
             welcome_title: "مرحبًا بك في Paltech Hub AI",
@@ -51,11 +51,11 @@
         }
     }
 
-    // Theme Toggle Logic (copied from image-ai.html for consistency)
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '💡';
+    // Theme Toggle Logic
+    const initialTheme = localStorage.getItem('theme');
+    if (initialTheme) {
+        document.documentElement.setAttribute('data-theme', initialTheme);
+        if (themeIcon) themeIcon.textContent = initialTheme === 'dark' ? '🌙' : '💡';
     } else {
         // Check system preference
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -82,7 +82,7 @@
         });
     }
 
-    // Language Switcher Logic (copied from image-ai.html for consistency)
+    // Language Switcher Logic
     if (languageSelect) {
         languageSelect.addEventListener('change', (event) => {
             setLanguage(event.target.value);
