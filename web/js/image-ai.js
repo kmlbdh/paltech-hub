@@ -31,7 +31,13 @@
     const display_uploaded_image_el = _("#display-uploaded-image");
     const guideContainer = _("#guide-container");
     const notificationBar = _('#notification-bar'); // New: Get notification bar element
-    
+    const themeToggle = _('#theme-toggle');
+    const themeIcon = _('#theme-icon');
+    const languageSelect = _('#language-select');
+    const historyContainer = _('#history-container');
+    const clearHistoryButton = _('#clear-history-button');
+    const backButton = _('#back-button'); // New: Get back button element
+
     // Turkish WOW elements
     const enableTurkishWowCheckbox = _('#enable-turkish-wow');
     const turkishWowControls = _('#turkish-wow-controls');
@@ -182,10 +188,7 @@
             if (footerPlaceholder) {
                 footerPlaceholder.innerHTML = footerHtml;
                 console.log('Footer placeholder innerHTML after insertion:', footerPlaceholder.innerHTML); // Debugging log
-            }
-
-            // After content is loaded, set up event listeners and language
-            setupEventListenersAndLanguage();
+            }            
 
         } catch (error) {
             console.error('Error loading shared content:', error);
@@ -578,8 +581,8 @@
      */
     async function load_api_workflows() {
         let workflowPaths = {
-            // 'flux_kontext': '/js/flux-kontext.json'
-            'flux_kontext': '/paltech/js/flux-kontext.json'
+            'flux_kontext': '/js/flux-kontext.json'
+            // 'flux_kontext': '/paltech/js/flux-kontext.json'
 
         }
 
@@ -731,7 +734,9 @@
 
     // Call loadSharedContent when the DOM is fully loaded
     document.addEventListener('DOMContentLoaded', async () => {
-        await loadSharedContent(); // Load header/footer first
+        // await loadSharedContent(); // Load header/footer first
+        // After content is loaded, set up event listeners and language
+        setupEventListenersAndLanguage();
         await load_api_workflows(); // Then load workflows
         await loadPoses(); // Then load poses
         // Initial UI setup that depends on all content being loaded
