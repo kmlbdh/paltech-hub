@@ -22,6 +22,8 @@
     const modalCloseButton = _('#modal-close-button');
     const results = _('#results');
     const batch_size_input = _('#batch-size-input');
+   const guidance_scale_input = _('#guidance-scale-input');
+   const guidance_scale_value_el = _('#guidance-scale-value');
     const prompt_input = _('#prompt-input');
     const img_height_input = _('#image-height');
     const img_width_input = _('#image-width');
@@ -110,7 +112,9 @@
            customized_prompt_title: "Customized Prompt",
            enable_custom_poses: "Enable Custom Poses",
             pose_select_label: "Select a Pose",
-            select_pose_placeholder: "-- Select a Pose --"
+            select_pose_placeholder: "-- Select a Pose --",
+           guidance_scale_label: "Guidance Scale",
+           guidance_scale_tooltip: "Higher values result in images that more closely match the prompt but may lack some creativity. Lower values result in images that are less closely matched to the prompt but may be more creative."
         },
         ar: {
             generation_params_title: "معلمات التوليد",
@@ -166,9 +170,11 @@
             footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة.",
             copied_to_clipboard: "تم النسخ إلى الحافظة!",
            customized_prompt_title: "مطالبة مخصصة",
-           enable_custom_poses: "تفعيل وضعيات المودل لتركش واو",
+           enable_custom_poses: "تفعيل وضعيات المودل (الملابس)",
             pose_select_label: "اختر وضعية المودل",
-            select_pose_placeholder: "-- اختر وضعية المودل --"
+            select_pose_placeholder: "-- اختر وضعية المودل --",
+           guidance_scale_label: "مقياس قوةالمطالبة",
+           guidance_scale_tooltip: "القيم الأعلى تؤدي إلى صور تتطابق بشكل وثيق مع المطالبة ولكنها قد تفتقر إلى بعض الإبداع. القيم الأقل تؤدي إلى صور أقل تطابقًا مع المطالبة ولكنها قد تكون أكثر إبداعًا."
         }
     };
 
@@ -561,8 +567,9 @@
      */
     async function load_api_workflows() {
         let workflowPaths = {
-            'flux_kontext': '/js/flux-kontext.json'
-            // 'flux_kontext': '/paltech/js/flux-kontext.json'
+            // 'flux_kontext': '/js/flux-kontext.json'
+            'flux_kontext': '/paltech/js/flux-kontext.json',
+            'flux_kontext-model': '/paltech/js/flux-kontext-model.json'
 
         }
         for (let key in workflowPaths) {
@@ -584,7 +591,7 @@
 
     async function loadPoses() {
         try {
-            const response = await fetch('/poses.json');
+            const response = await fetch('/paltech/js/poses.json');
             if (!response.ok) {
                 throw new Error(`Failed to load poses.json: ${response.status} ${response.statusText}`);
             }
@@ -673,7 +680,10 @@
                 wf_to_use['355'].inputs.width = parseInt(img_width_input.value);
                 wf_to_use['355'].inputs.height = parseInt(img_height_input.value);
             }
-
+            if(wf_to_use['316']) {
+               wf_to_use['316'].inputs.guidance = parseFloat(guidance_scale_input.value);
+            }
+               
             if (uploadedImageFile) {
                 const currentFileIdentifier = `${uploadedImageFile.name}-${uploadedImageFile.size}-${uploadedImageFile.lastModified}`;
                 if (currentFileIdentifier !== lastUploadedFileIdentifier) {
@@ -711,6 +721,7 @@
 
     if (interrupt_button) interrupt_button.addEventListener('click', () => fetch('/interrupt', { method: 'POST' }));
     if (image_size_radioBtn) image_size_radioBtn.addEventListener('change', e => { if (e.target.name === 'image-size') setImageDimensions(e.target.value); });
+   if (guidance_scale_input) guidance_scale_input.addEventListener('input', e => { if(guidance_scale_value_el) guidance_scale_value_el.textContent = e.target.value; });
     if(image_input) image_input.addEventListener('change', function() { handleImagePreview(this.files ? this.files[0] : null); });
     if(modalCloseButton) modalCloseButton.addEventListener('click', () => displayModalMessage('', false));
     if(clearHistoryButton) clearHistoryButton.addEventListener('click', clearHistory);

@@ -122,9 +122,11 @@ html[data-theme='dark'] .image-size-label:hover {
 
 html[data-theme='white'] .icon-shape {
     background-color: #9ca3af; /* gray-400 */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border for light theme */
 }
 html[data-theme='dark'] .icon-shape {
     background-color: #4b5563; /* gray-600 */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for dark theme */
 }
 .icon-shape {
     border-radius: 2px;
@@ -136,6 +138,16 @@ html[data-theme='dark'] .icon-shape {
     background-position: center;
     min-height: 150px;
 }
+/* Specific styles for display-uploaded-image */
+html[data-theme='white'] #display-uploaded-image {
+    background-color: #f9fafb; /* bg-gray-50 */
+    border-color: #d1d5db; /* border-gray-300 */
+}
+html[data-theme='dark'] #display-uploaded-image {
+    background-color: #1f2937; /* bg-gray-800/50 */
+    border-color: #374151; /* border-gray-700 */
+}
+
 
 .history-item {
     display: flex;
@@ -201,37 +213,342 @@ html[data-theme='dark'] .history-item-prompt {
     direction: ltr;
 }
 
-/* Custom styles for header and column separation in white theme */
+/* Custom styles for header */
 html[data-theme='white'] header {
-    background-color: #F8F8F8; /* Light gray for header */
+    background-color: #ffffff; /* bg-white (changed from #F8F8F8) */
     color: #1f2937; /* text-gray-800 */
     border-bottom: 1px solid #d1d5db; /* A bit darker border for separation */
+}
+html[data-theme='dark'] header {
+    background-color: #111827; /* bg-gray-900 */
+    color: #e5e7eb; /* text-gray-200 */
+    border-bottom: 1px solid #374151; /* Darker border for dark theme */
 }
 html[data-theme='white'] header .text-xs {
     color: #1f2937; /* Ensure version text is dark gray */
 }
 html[data-theme='white'] header #theme-toggle,
-html[data-theme='white'] header #language-select {
+html[data-theme='white'] header #language-select,
+html[data-theme='white'] header #back-button { /* Added back-button */
     background-color: #e5e7eb; /* bg-gray-200 */
     color: #1f2937; /* text-gray-800 */
     border-color: #d1d5db; /* border-gray-300 */
 }
 html[data-theme='white'] header #theme-toggle:hover,
-html[data-theme='white'] header #language-select:hover {
+html[data-theme='white'] header #language-select:hover,
+html[data-theme='white'] header #back-button:hover { /* Added back-button */
     background-color: #d1d5db; /* hover bg-gray-300 */
+}
+/* Specific styles for header buttons in dark mode */
+html[data-theme='dark'] header #theme-toggle,
+html[data-theme='dark'] header #language-select,
+html[data-theme='dark'] header #back-button { /* Added back-button */
+    background-color: #374151; /* Darker gray for buttons in dark mode */
+    color: #e5e7eb; /* Light text for buttons in dark mode */
+    border-color: #4b5563; /* Darker border for buttons in dark mode */
+}
+html[data-theme='dark'] header #theme-toggle:hover,
+html[data-theme='dark'] header #language-select:hover,
+html[data-theme='dark'] header #back-button:hover { /* Added back-button */
+    background-color: #4b5563; /* Even darker gray on hover in dark mode */
 }
 
 
+/* Custom styles for aside and main */
 html[data-theme='white'] aside {
+    background-color: #ffffff; /* bg-white */
     border-right: 1px solid #d1d5db; /* Darker border for column separation */
+}
+html[data-theme='dark'] aside {
+    background-color: #111827; /* bg-gray-900 */
+    border-right: 1px solid #374151; /* Darker border for dark theme */
+}
+
+/* Differentiate main content area in white theme */
+html[data-theme='white'] main {
+    background-color: #f9fafb; /* bg-gray-50 */
+}
+html[data-theme='dark'] main {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+
+/* Differentiate guide-container in white theme (matches main) */
+html[data-theme='white'] #guide-container {
+    background-color: #f9fafb; /* bg-gray-50 */
+}
+html[data-theme='dark'] #guide-container {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+
+/* Custom styles for sticky button container */
+html[data-theme='white'] .sticky-bottom-buttons {
+    background-color: #ffffff; /* bg-white */
+    border-top: 1px solid #e5e7eb; /* border-gray-200 */
+}
+html[data-theme='dark'] .sticky-bottom-buttons {
+    background-color: #111827; /* bg-gray-900 */
+    border-top: 1px solid #374151; /* border-gray-700 */
 }
 
 html[data-theme='white'] details .pl-4.pt-4.border-l-2 {
     border-left-color: #9CA3AF; /* Darker gray for accordion left borders */
 }
 
+/* Custom styles for footer */
 html[data-theme='white'] footer {
     background-color: #ffffff; /* bg-white */
     color: #1f2937; /* text-gray-800 */
     border-top: 1px solid #e5e7eb; /* border-gray-200 */
+}
+html[data-theme='dark'] footer {
+    background-color: #111827; /* bg-gray-900 */
+    color: #e5e7eb; /* text-gray-200 */
+    border-top: 1px solid #374151; /* border-gray-700 */
+}
+
+/* Text color adjustments for various elements */
+html[data-theme='white'] .text-gray-900 { color: #1f2937; } /* Ensure dark text for headings etc. in light mode */
+html[data-theme='dark'] .text-gray-900 { color: #e5e7eb; } /* Ensure light text for headings etc. in dark mode */
+
+html[data-theme='white'] .text-gray-700 { color: #374151; } /* General text in light mode */
+html[data-theme='dark'] .text-gray-700 { color: #9ca3af; } /* General text in dark mode */
+
+html[data-theme='white'] .text-gray-600 { color: #4b5563; } /* Labels, weaker text in light mode */
+html[data-theme='dark'] .text-gray-600 { color: #9ca3af; } /* Labels, weaker text in dark mode */
+
+html[data-theme='white'] .text-gray-500 { color: #6b7280; } /* Placeholders, very weak text in light mode */
+html[data-theme='dark'] .text-gray-500 { color: #6b7280; } /* Placeholders, very weak text in dark mode */
+
+html[data-theme='white'] .text-gray-800 { color: #1f2937; } /* Input text, etc. in light mode */
+html[data-theme='dark'] .text-gray-800 { color: #e5e7eb; } /* Input text, etc. in dark mode */
+
+/* Specific overrides for strong tags within guide */
+html[data-theme='white'] #guide-container strong {
+    color: #1f2937; /* Dark text for strong in light mode */
+}
+html[data-theme='dark'] #guide-container strong {
+    color: #e5e7eb; /* Light text for strong in dark mode */
+}
+
+/* Specific styles for inputs and textareas */
+html[data-theme='white'] input[type="text"],
+html[data-theme='white'] input[type="number"],
+html[data-theme='white'] textarea,
+html[data-theme='white'] select { /* Added select */
+    background-color: #f9fafb; /* bg-gray-50 */
+    color: #1f2937; /* text-gray-800 */
+    border-color: #d1d5db; /* border-gray-300 */
+}
+
+html[data-theme='dark'] input[type="text"],
+html[data-theme='dark'] input[type="number"],
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] select { /* Added select */
+    background-color: #1f2937; /* bg-gray-800 */
+    color: #e5e7eb; /* text-gray-200 */
+    border-color: #374151; /* border-gray-700 */
+}
+
+/* Specific styles for modal close button */
+html[data-theme='white'] #modal-close-button {
+    background-color: #d1d5db; /* bg-gray-300 */
+    color: #1f2937; /* text-gray-800 */
+}
+html[data-theme='white'] #modal-close-button:hover {
+    background-color: #9ca3af; /* hover:bg-gray-400 */
+}
+
+html[data-theme='dark'] #modal-close-button {
+    background-color: #4b5563; /* bg-gray-600 */
+    color: #e5e7eb; /* text-gray-200 */
+}
+html[data-theme='dark'] #modal-close-button:hover {
+    background-color: #6b7280; /* hover:bg-gray-500 */
+}
+
+/* Specific styles for "Select Image" button (label for input type file) */
+html[data-theme='white'] label[for="image-input"] {
+    background-color: #d1d5db; /* bg-gray-300 */
+    color: #1f2937; /* text-gray-800 */
+}
+html[data-theme='white'] label[for="image-input"]:hover {
+    background-color: #9ca3af; /* hover:bg-gray-400 */
+}
+html[data-theme='dark'] label[for="image-input"] {
+    background-color: #4b5563; /* bg-gray-700 */
+    color: #e5e7eb; /* text-gray-200 */
+}
+html[data-theme='dark'] label[for="image-input"]:hover {
+    background-color: #6b7280; /* hover:bg-gray-600 */
+}
+
+/* Specific styles for the random seed checkbox */
+#is-random {
+    -webkit-appearance: checkbox; /* Ensure standard checkbox appearance */
+    appearance: checkbox; /* Ensure standard checkbox appearance */
+    height: 16px; /* Standard size */
+    width: 16px; /* Standard size */
+    border-radius: 3px; /* Slightly rounded corners */
+    border: 1px solid; /* Add a border */
+    cursor: pointer;
+    vertical-align: middle; /* Align with text */
+    margin-right: 0.25rem; /* Small margin to separate from text */
+    accent-color: #3c32c8; /* This sets the color when checked */
+}
+
+html[data-theme='white'] #is-random {
+    border-color: #9ca3af; /* Gray border for unchecked in light mode */
+    background-color: #ffffff; /* White background for unchecked in light mode */
+}
+html[data-theme='dark'] #is-random {
+    border-color: #6b7280; /* Darker gray border for unchecked in dark mode */
+    background-color: #1f2937; /* Dark background for unchecked in dark mode */
+}
+
+/* START: Custom Dropdown Styles */
+html[data-theme='white'] #custom-pose-select-button {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+        color: #1f2937;
+}
+    html[data-theme='dark'] #custom-pose-select-button {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #e5e7eb;
+}
+html[data-theme='white'] #custom-pose-select-options {
+    background-color: #ffffff;
+    border-color: #d1d5db;
+}
+html[data-theme='dark'] #custom-pose-select-options {
+    background-color: #1f2937;
+    border-color: #4b5563;
+}
+.custom-pose-option {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    cursor: pointer;
+    gap: 0.75rem;
+}
+html[data-theme='white'] .custom-pose-option:hover {
+    background-color: #f3f4f6; /* bg-gray-100 */
+}
+html[data-theme='dark'] .custom-pose-option:hover {
+    background-color: #374151; /* bg-gray-700 */
+}
+.custom-pose-option img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+/* END: Custom Dropdown Styles */
+
+/* START: Poses Modal Styles */
+html[data-theme='white'] #poses-modal {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+html[data-theme='dark'] #poses-modal {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+html[data-theme='white'] #poses-modal .bg-white {
+    background-color: #ffffff;
+}
+html[data-theme='dark'] #poses-modal .dark\:bg-gray-800 {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+html[data-theme='white'] #poses-modal-list {
+    background-color: #f9fafb; /* bg-gray-50 */
+}
+html[data-theme='dark'] #poses-modal-list {
+    background-color: #111827; /* bg-gray-900 */
+}
+html[data-theme='white'] .pose-card {
+    background-color: #ffffff;
+    border-color: #e5e7eb; /* border-gray-200 */
+}
+html[data-theme='dark'] .pose-card {
+    background-color: #1f2937; /* bg-gray-800 */
+    border-color: #374151; /* border-gray-700 */
+}
+html[data-theme='white'] .pose-card h3 {
+    color: #1f2937; /* text-gray-800 */
+}
+html[data-theme='dark'] .pose-card h3 {
+    color: #e5e7eb; /* text-gray-200 */
+}
+html[data-theme='white'] .pose-card p {
+    color: #4b5563; /* text-gray-600 */
+}
+html[data-theme='dark'] .pose-card p {
+    color: #9ca3af; /* text-gray-400 */
+}
+html[data-theme='white'] #poses-modal-close-button {
+    color: #1f2937;
+}
+html[data-theme='dark'] #poses-modal-close-button {
+    color: #e5e7eb;
+}
+html[data-theme='white'] #poses-modal-close-button:hover {
+    background-color: #e5e7eb;
+}
+html[data-theme='dark'] #poses-modal-close-button:hover {
+    background-color: #374151;
+}
+/* END: Poses Modal Styles */
+
+.modal-open {
+    overflow: hidden;
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-icon {
+    cursor: pointer;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 220px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -110px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+html[data-theme='dark'] .tooltip-text {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+html[data-theme='dark'] .tooltip-text::after {
+        border-color: #f3f4f6 transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }

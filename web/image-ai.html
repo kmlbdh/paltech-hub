@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paltech Hub AI</title>
-     <script src="https://cdn.tailwindcss.com"></script>
+     <!-- <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Tailwind CSS configuration for dark mode using a selector
         tailwind.config = {
@@ -18,7 +18,7 @@
                 },
             },
         };
-    </script>
+    </script> -->
     <style>
         /* Base styles for body */
         html[data-theme='white'] body {
@@ -523,7 +523,58 @@
         .modal-open {
             overflow: hidden;
         }
+
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-icon {
+            cursor: pointer;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        html[data-theme='dark'] .tooltip-text {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        html[data-theme='dark'] .tooltip-text::after {
+             border-color: #f3f4f6 transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
      </style>
+    <link rel="stylesheet" type="text/css" href="./css/image-ai.css?v=0.0.1">
      <link rel="preconnect" href="https://fonts.googleapis.com">
      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
@@ -571,6 +622,19 @@
                                 <input id="is-random" type="checkbox" checked>
                                 <span data-lang-key="random_checkbox">Random</span>
                             </label>
+                        </div>
+                        <div>
+                           <div class="flex items-center justify-between mb-2">
+                               <div class="flex items-center gap-2">
+                                   <label for="guidance-scale-input" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="guidance_scale_label">Guidance Scale</label>
+                                   <div class="tooltip-container">
+                                       <span class="tooltip-icon text-gray-400 dark:text-gray-500">ⓘ</span>
+                                       <span class="tooltip-text text-xs" data-lang-key="guidance_scale_tooltip">Higher values result in images that more closely match the prompt but may lack some creativity. Lower values result in images that are less closely matched to the prompt but may be more creative.</span>
+                                   </div>
+                               </div>
+                               <span id="guidance-scale-value" class="text-sm font-semibold text-gray-800 dark:text-gray-200">7</span>
+                           </div>
+                           <input id="guidance-scale-input" type="range" min="1" max="100" value="50" step="1">
                         </div>
                         <div>
                             <label for="batch-size-input" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" data-lang-key="images_to_generate_label">Images to generate</label>
