@@ -426,6 +426,46 @@
             background-color: #1f2937; /* Dark background for unchecked in dark mode */
         }
         
+        /* START: Custom Dropdown Styles */
+        html[data-theme='white'] #custom-pose-select-button {
+             background-color: #f9fafb;
+             border-color: #d1d5db;
+             color: #1f2937;
+        }
+         html[data-theme='dark'] #custom-pose-select-button {
+             background-color: #1f2937;
+             border-color: #374151;
+             color: #e5e7eb;
+        }
+        html[data-theme='white'] #custom-pose-select-options {
+            background-color: #ffffff;
+            border-color: #d1d5db;
+        }
+        html[data-theme='dark'] #custom-pose-select-options {
+            background-color: #1f2937;
+            border-color: #4b5563;
+        }
+        .custom-pose-option {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            gap: 0.75rem;
+        }
+        html[data-theme='white'] .custom-pose-option:hover {
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        html[data-theme='dark'] .custom-pose-option:hover {
+            background-color: #374151; /* bg-gray-700 */
+        }
+        .custom-pose-option img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        /* END: Custom Dropdown Styles */
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -531,10 +571,19 @@
                                 <span data-lang-key="enable_turkish_wow">Enable Turkish WOW Poses</span>
                             </label>
                             <div id="turkish-wow-controls" class="space-y-4" style="display: none;">
-                                <label for="pose-select" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="pose_select_label">Select a Pose</label>
-                                <select id="pose-select" class="w-full p-2 rounded-md bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200">
-                                    <option value="" data-lang-key="select_pose_placeholder">-- Select a Pose --</option>
-                                </select>
+                                <label for="custom-pose-select-button" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="pose_select_label">Select a Pose</label>
+                                <div id="custom-pose-select" class="relative">
+                                    <button type="button" id="custom-pose-select-button" class="w-full p-2 rounded-md border flex items-center justify-between text-left">
+                                        <div id="selected-pose-container" class="flex items-center gap-3">
+                                            <img id="selected-pose-img" src="" alt="" class="w-10 h-10 object-cover rounded hidden">
+                                            <span id="selected-pose-text" data-lang-key="select_pose_placeholder">-- Select a Pose --</span>
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="pose-select-value" name="pose-select-value">
                             </div>
                         </div>
                     </details>
@@ -635,6 +684,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Poses Modal -->
+    <div id="poses-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white" data-lang-key="pose_select_label">Select a Pose</h2>
+                <button id="poses-modal-close-button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="poses-modal-list" class="p-4 overflow-y-auto flex-grow">
+                <!-- Poses will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
 
     <footer class="flex-shrink-0 p-4 text-center shadow-md text-sm transition-colors duration-300">
         <p data-lang-key="footer_text"></p>

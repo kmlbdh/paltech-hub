@@ -30,18 +30,24 @@
     const node_status_el = _('#current-node-status');
     const display_uploaded_image_el = _("#display-uploaded-image");
     const guideContainer = _("#guide-container");
-    const notificationBar = _('#notification-bar'); // New: Get notification bar element
+    const notificationBar = _('#notification-bar');
     const themeToggle = _('#theme-toggle');
     const themeIcon = _('#theme-icon');
     const languageSelect = _('#language-select');
     const historyContainer = _('#history-container');
     const clearHistoryButton = _('#clear-history-button');
-    const backButton = _('#back-button'); // New: Get back button element
+    const backButton = _('#back-button');
 
     // Turkish WOW elements
     const enableTurkishWowCheckbox = _('#enable-turkish-wow');
     const turkishWowControls = _('#turkish-wow-controls');
-    const poseSelect = _('#pose-select');
+    // Custom dropdown elements
+    const poseSelectButton = _('#custom-pose-select-button');
+    const selectedPoseText = _('#selected-pose-text');
+    const poseSelectValueInput = _('#pose-select-value');
+   const posesModal = _('#poses-modal');
+   const posesModalList = _('#poses-modal-list');
+   const posesModalCloseButton = _('#poses-modal-close-button');
     let posesData = []; // To store the loaded poses from poses.json
 
     const SESSION_HISTORY_KEY = 'paltech_image_history';
@@ -272,29 +278,20 @@
                     element.innerHTML = languages[langCode][key];
                 }
             }
-            // Debugging log for footer text
-            if (key === 'footer_text') {
-                console.log(`setLanguage: Found footer element with data-lang-key="footer_text".`);
-                console.log(`setLanguage: Attempting to set innerHTML to:`, languages[langCode][key]);
-                // You can inspect element.innerHTML here after assignment if needed
-            }
         });
         
-        // Special handling for the guide container's strong tag in step5_desc
         const step5DescElement = _('[data-lang-key="step5_desc"] strong');
         if (step5DescElement) {
             step5DescElement.className = 'text-[#3c32c8]'; // Reapply the color class
         }
 
-        // Update the language select dropdown
-        const languageSelect = _('#language-select'); // Re-get it as it's now in loaded content
+        const languageSelect = _('#language-select');
         if (languageSelect) {
             languageSelect.value = langCode;
         }
-        renderHistory(); // Re-render history to apply new language strings
+        renderHistory(); 
     }
 
-    // Function to display modal messages (for critical errors)
     function displayModalMessage(messageKey, show = true, isLangKey = true) {
         if (modalMessageEl && modal) {
             let messageText = isLangKey ? languages[currentLanguage][messageKey] : messageKey;
@@ -304,22 +301,20 @@
         }
     }
 
-    // New function to display temporary notifications
     function displayNotification(messageKey, duration = 5000, isLangKey = true) {
         if (notificationBar) {
             let messageText = isLangKey ? languages[currentLanguage][messageKey] : messageKey;
             notificationBar.textContent = messageText;
-            notificationBar.classList.add('show'); // Show the notification bar
+            notificationBar.classList.add('show');
 
             setTimeout(() => {
-                notificationBar.classList.remove('show'); // Hide after duration
+                notificationBar.classList.remove('show');
             }, duration);
         }
     }
 
     function updateUIForGenerationState(isGenerating) {
         IS_GENERATING = isGenerating;
-        // Using a helper function to toggle display based on a boolean
         function toggleDisplay(element, show) {
             if (element) {
                 if (show) element.style.display = '';
@@ -333,46 +328,37 @@
         const inputs = [
             seed_input, prompt_input, batch_size_input, img_height_input, 
             img_width_input, image_input, is_random_input,
-            // Disable Turkish WOW controls if generating
-            enableTurkishWowCheckbox, poseSelect
+            enableTurkishWowCheckbox, poseSelectButton
         ];
         inputs.forEach(input => { if (input) input.disabled = isGenerating; });
         
         if (!isGenerating && seed_input && is_random_input) {
             seed_input.disabled = is_random_input.checked;
         }
-        // Also manage the poseSelect based on enableTurkishWowCheckbox state
-        if (!isGenerating && enableTurkishWowCheckbox && poseSelect) {
-            poseSelect.disabled = !enableTurkishWowCheckbox.checked;
+        if (!isGenerating && enableTurkishWowCheckbox && poseSelectButton) {
+            poseSelectButton.disabled = !enableTurkishWowCheckbox.checked;
         }
 
-        updateProgress(0); // Reset progress bar
+        updateProgress(0);
         if(node_status_el) node_status_el.innerText = isGenerating ? languages[currentLanguage].processing_status : '';
 
-        // --- REVISED LOGIC FOR GUIDE AND RESULTS VISIBILITY ---
         if (isGenerating) {
-            // When generation starts
-            if (guideContainer) guideContainer.classList.add('hidden'); // Hide guide
-            if (results) results.classList.remove('hidden'); // Show results area
-            if (results) results.innerHTML = `<div class="flex justify-center items-center h-full"><div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#3c32c8]"></div></div>`; // Show spinner
+            if (guideContainer) guideContainer.classList.add('hidden');
+            if (results) results.classList.remove('hidden');
+            if (results) results.innerHTML = `<div class="flex justify-center items-center h-full"><div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#3c32c8]"></div></div>`;
         } else {
-            // When generation stops (idle, finished, interrupted, error)
             const hasImagesInResults = results && results.querySelector('img');
-
             if (guideContainer && results) {
                 if (!hasImagesInResults) {
-                    // If no images are present in results, show the guide and hide results
-                    results.innerHTML = ''; // Clear results area (e.g., remove spinner)
-                    results.classList.add('hidden'); // Hide results area
-                    guideContainer.classList.remove('hidden'); // Show guide
+                    results.innerHTML = '';
+                    results.classList.add('hidden');
+                    guideContainer.classList.remove('hidden');
                 } else {
-                    // If images are present, keep the guide hidden and results visible
                     guideContainer.classList.add('hidden');
                     results.classList.remove('hidden');
                 }
             }
         }
-        // --- END REVISED LOGIC ---
     }
 
     function updateProgress(value, max = 100) {
@@ -418,7 +404,7 @@
                 const img = new Image();
                 img.onload = () => {
                     display_uploaded_image_el.style.backgroundImage = `url(${reader.result})`;
-                    display_uploaded_image_el.innerHTML = ''; // Remove placeholder text
+                    display_uploaded_image_el.innerHTML = '';
                 };
                 img.src = reader.result;
             };
@@ -429,11 +415,9 @@
         }
     }
 
-    // History functions
     function saveHistoryItem(imageUrl, promptText) {
         let history = loadHistory();
-        history.unshift({ imageUrl, promptText, timestamp: new Date().toISOString() }); // Add to beginning
-        // Keep only the last 10 items to prevent excessive storage
+        history.unshift({ imageUrl, promptText, timestamp: new Date().toISOString() });
         if (history.length > 10) {
             history = history.slice(0, 10);
         }
@@ -447,10 +431,10 @@
     }
 
     function renderHistory() {
-        const historyContainer = _('#history-container'); // Re-get it as it's now in loaded content
+        const historyContainer = _('#history-container');
         if (!historyContainer) return;
         const history = loadHistory();
-        historyContainer.innerHTML = ''; // Clear existing history
+        historyContainer.innerHTML = '';
 
         if (history.length === 0) {
             historyContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-sm" data-lang-key="history_empty_message">${languages[currentLanguage].history_empty_message}</p>`;
@@ -465,7 +449,6 @@
                 const promptElement = historyItemDiv.querySelector('.history-item-prompt');
                 if (promptElement) {
                     promptElement.addEventListener('click', () => {
-                        // Use document.execCommand for clipboard copy due to iframe restrictions
                         const textarea = document.createElement('textarea');
                         textarea.value = item.promptText;
                         document.body.appendChild(textarea);
@@ -473,14 +456,12 @@
                         try {
                             const successful = document.execCommand('copy');
                             if (successful) {
-                                displayNotification('copied_to_clipboard', 2000); // Show success notification
+                                displayNotification('copied_to_clipboard', 2000);
                             } else {
-                                console.error('Fallback: Copying text command was unsuccessful.');
-                                displayNotification('Failed to copy!', 2000, false); // Show failure notification
+                                displayNotification('Failed to copy!', 2000, false);
                             }
                         } catch (err) {
-                            console.error('Fallback: Oops, unable to copy', err);
-                            displayNotification('Failed to copy!', 2000, false); // Show failure notification
+                            displayNotification('Failed to copy!', 2000, false);
                         }
                         document.body.removeChild(textarea);
                     });
@@ -503,12 +484,11 @@
         ws.onopen = () => {
             console.log('WebSocket connected.');
             reconnectAttempts = 0;
-            displayNotification('WebSocket connected.', 3000, false); // Notify connection
+            displayNotification('WebSocket connected.', 3000, false);
         };
 
         ws.onmessage = (event) => {
             if (event.data instanceof Blob) {
-                console.log("Ignoring Blob (intermediate image) message.");
                 return;
             }
             try {
@@ -530,22 +510,21 @@
                             const gridClass = data.data.output.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
                             results.innerHTML = `<div class="grid ${gridClass} gap-4">${data.data.output.images.map(image => {
                                 const imageUrl = `/view?filename=${image.filename}&subfolder=${image.subfolder}&type=${image.type}`;
-                                // Save to history
                                 saveHistoryItem(imageUrl, prompt_input.value);
                                 return `<div><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" class="rounded-lg shadow-lg"></a></div>`;
                             }).join('')}</div>`;
-                            if (guideContainer) guideContainer.classList.add('hidden'); // Ensure guide is hidden if images are shown
-                            if (results) results.classList.remove('hidden'); // Ensure results are visible
+                            if (guideContainer) guideContainer.classList.add('hidden');
+                            if (results) results.classList.remove('hidden');
                         }
                         break;
                     case 'execution_interrupted':
                         updateUIForGenerationState(false);
-                        displayModalMessage('generation_interrupted', true); // Still a modal, as it's an important event
+                        displayModalMessage('generation_interrupted', true);
                         if (node_status_el) node_status_el.innerText = languages[currentLanguage].interrupted_status;
                         break;
                     case 'status':
                         updateUIForGenerationState(data.data.status.exec_info.queue_remaining > 0);
-                        if (!IS_GENERATING) { // If not generating, and queue is empty
+                        if (!IS_GENERATING) {
                             console.log(languages[currentLanguage].idle_status);
                         }
                         break;
@@ -563,15 +542,15 @@
             if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                 reconnectAttempts++;
                 setTimeout(setupWebSocket, RECONNECT_DELAY_MS);
-                displayNotification('ws_connecting_message', 3000); // Changed to notification
+                displayNotification('ws_connecting_message', 3000);
             } else {
-                displayNotification('reconnect_failed', 5000); // Changed to notification
+                displayNotification('reconnect_failed', 5000);
             }
         };
     
         ws.onerror = function() {
             console.error('WebSocket Error. Attempting to reconnect via onclose.');
-            displayNotification('ws_error_message', 5000); // Changed to notification
+            displayNotification('ws_error_message', 5000);
         };
     }
     
@@ -585,55 +564,83 @@
             // 'flux_kontext': '/paltech/js/flux-kontext.json'
 
         }
-
         for (let key in workflowPaths) {
             try {
                 let response = await fetch(workflowPaths[key]);
                 if (!response.ok) {
                     throw new Error(`Failed to load workflow ${workflowPaths[key]}: ${response.status} ${response.statusText}`);
                 }
-                workflows[key] = await response.json(); // Store the loaded JSON in the global 'workflows' object
+                workflows[key] = await response.json();
                 console.log(`Workflow ${key} loaded successfully:`, workflows[key]);
             } catch (error) {
                 console.error(`Error loading workflow ${key}:`, error);
-                workflows[key] = {}; // Set to empty object on error
+                workflows[key] = {};
                 displayModalMessage(`Failed to load workflow: ${key}. Please check the path and server status.`, true, false);
             }
         }
-        return workflows; // Return the workflows object
+        return workflows;
     }
 
-    /**
-     * Loads poses data from poses.json and populates the pose selection dropdown.
-     */
     async function loadPoses() {
         try {
-            const response = await fetch('/poses.json'); // Assuming poses.json is at the root or accessible path
+            const response = await fetch('/poses.json');
             if (!response.ok) {
                 throw new Error(`Failed to load poses.json: ${response.status} ${response.statusText}`);
             }
             posesData = await response.json();
-            populatePoseDropdown();
+            populatePoseModal();
         } catch (error) {
             console.error('Error loading poses data:', error);
             displayModalMessage('Failed to load pose data. Please check the poses.json file.', true, false);
         }
     }
 
-    /**
-     * Populates the pose selection dropdown with data from posesData.
-     */
-    function populatePoseDropdown() {
-        if (!poseSelect) return;
-        // Clear existing options, but keep the placeholder
-        poseSelect.innerHTML = `<option value="" data-lang-key="select_pose_placeholder">${languages[currentLanguage].select_pose_placeholder}</option>`;
-        
-        posesData.forEach((pose, index) => {
-            const option = d.createElement('option');
-            option.value = index; // Use index to easily retrieve the full object later
-            option.textContent = pose.name;
-            poseSelect.appendChild(option);
-        });
+   function populatePoseModal() {
+       if (!posesModalList) return;
+       posesModalList.innerHTML = ''; // Clear existing content
+
+       const grid = d.createElement('div');
+       grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4';
+
+       posesData.forEach((pose, index) => {
+           const card = d.createElement('div');
+           card.className = 'pose-card flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200';
+           card.dataset.index = index;
+
+           card.innerHTML = `
+               <img src="${pose.image}" alt="${pose.name}" class="w-full h-48 object-cover">
+               <div class="p-3 flex flex-col flex-grow">
+                   <h3 class="font-semibold text-gray-900 dark:text-white mb-1 truncate">${pose.name}</h3>
+                   <p class="text-xs text-gray-600 dark:text-gray-400 flex-grow">${pose.description.substring(0, 100)}...</p>
+               </div>
+           `;
+           
+           card.addEventListener('click', () => handlePoseSelection(index));
+           grid.appendChild(card);
+       });
+
+       posesModalList.appendChild(grid);
+   }
+
+    function handlePoseSelection(selectedIndex) {
+        if (!selectedPoseText || !poseSelectValueInput || !prompt_input || !posesModal) return;
+
+        poseSelectValueInput.value = selectedIndex;
+
+        if (selectedIndex !== null && posesData[selectedIndex]) {
+            const selectedPose = posesData[selectedIndex];
+            const selectedPoseImg = _('#selected-pose-img');
+            const selectedPoseTextSpan = _('#selected-pose-text');
+
+            if (selectedPoseImg && selectedPoseTextSpan) {
+               selectedPoseImg.src = selectedPose.image;
+               selectedPoseImg.alt = selectedPose.name;
+               selectedPoseImg.classList.remove('hidden');
+               selectedPoseTextSpan.textContent = selectedPose.name;
+            }
+            prompt_input.value = selectedPose.description;
+        }
+        posesModal.classList.add('hidden');
     }
 
     // Event listeners
@@ -641,16 +648,15 @@
         generate.addEventListener('click', async () => {
             if (IS_GENERATING) return;
             
-            updateUIForGenerationState(true); // Set state to generating, which hides guide and shows spinner
+            updateUIForGenerationState(true);
 
-            // Check if workflows.flux_kontext is loaded
             if (!workflows || !workflows.flux_kontext) {
                 displayModalMessage('Workflow not loaded. Please ensure the workflow JSON is accessible and try again.', true, false);
                 updateUIForGenerationState(false);
                 return;
             }
 
-            let wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext)); // Use a copy
+            let wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext));
             
             if(prompt_input) wf_to_use['308'].inputs.text = prompt_input.value;
             if(is_random_input && is_random_input.checked && seed_input) seed_input.value = Math.floor(Math.random() * 1e15);
@@ -668,7 +674,7 @@
                 const currentFileIdentifier = `${uploadedImageFile.name}-${uploadedImageFile.size}-${uploadedImageFile.lastModified}`;
                 if (currentFileIdentifier !== lastUploadedFileIdentifier) {
                         try {
-                        const uploadResult = await fetch('/upload/image', { // This path should be correct as it's a ComfyUI API endpoint
+                        const uploadResult = await fetch('/upload/image', {
                             method: 'POST',
                             body: (() => {
                                 const fd = new FormData();
@@ -681,21 +687,20 @@
                         lastUploadedFileIdentifier = currentFileIdentifier;
                     } catch (e) {
                         displayModalMessage(`${languages[currentLanguage].image_upload_failed} ${e.message}`, true, false);
-                        updateUIForGenerationState(false); // This will now handle guide visibility
+                        updateUIForGenerationState(false);
                         return;
                     }
                 }
                 if(wf_to_use['357']) wf_to_use['357'].inputs.image = lastUploadedComfyUIName;
             } else {
-                // If no image is uploaded, use a blank image or remove the node if not needed
                 if(wf_to_use['357']) wf_to_use['357'].inputs.image = "default_blank.png";
             }
 
             try {
                 await queue_prompt(wf_to_use);
             } catch (e) {
-                displayModalMessage(`${e.message}`, true, false); // Keep as modal for prompt queue errors
-                updateUIForGenerationState(false); // This will now handle guide visibility
+                displayModalMessage(`${e.message}`, true, false);
+                updateUIForGenerationState(false);
             }
         });
     }
@@ -710,43 +715,43 @@
     if (enableTurkishWowCheckbox) {
         enableTurkishWowCheckbox.addEventListener('change', () => {
             if (turkishWowControls) {
-                turkishWowControls.style.display = enableTurkishWowCheckbox.checked ? 'block' : 'none';
-                // Disable/enable poseSelect based on checkbox state
-                poseSelect.disabled = !enableTurkishWowCheckbox.checked;
-                // Clear selection and prompt if disabled
-                if (!enableTurkishWowCheckbox.checked) { // We removed '&& poseSelect' as prompt_input always exists.
-                    poseSelect.value = "";
-                    prompt_input.value = ""; // This line clears the prompt textarea.
+                const isChecked = enableTurkishWowCheckbox.checked;
+                turkishWowControls.style.display = isChecked ? 'block' : 'none';
+                poseSelectButton.disabled = !isChecked;
+                
+                if (!isChecked) {
+                    // Clear selection and prompt when disabled
+                    poseSelectValueInput.value = "";
+                    const selectedPoseImg = _('#selected-pose-img');
+                    const selectedPoseTextSpan = _('#selected-pose-text');
+                    if(selectedPoseImg) selectedPoseImg.classList.add('hidden');
+                    if(selectedPoseTextSpan) selectedPoseTextSpan.innerHTML = `<span data-lang-key="select_pose_placeholder">${languages[currentLanguage].select_pose_placeholder}</span>`;
+                    if(prompt_input) prompt_input.value = "";
                 }
             }
         });
     }
 
-    if (poseSelect) {
-        poseSelect.addEventListener('change', () => {
-            const selectedIndex = poseSelect.value;
-            if (selectedIndex !== "" && posesData[selectedIndex]) {
-                prompt_input.value = posesData[selectedIndex].description;
-            } else if (selectedIndex === "") {
-                prompt_input.value = ""; // Clear prompt if placeholder is selected
-            }
-        });
-    }
+   // Poses Modal Listeners
+   if (poseSelectButton) {
+       poseSelectButton.addEventListener('click', () => {
+           if (posesModal) posesModal.classList.remove('hidden');
+       });
+   }
 
-    // Call loadSharedContent when the DOM is fully loaded
+   if (posesModalCloseButton) {
+       posesModalCloseButton.addEventListener('click', () => {
+           if (posesModal) posesModal.classList.add('hidden');
+       });
+   }
+
+    // Initial Load
     document.addEventListener('DOMContentLoaded', async () => {
-        // await loadSharedContent(); // Load header/footer first
-        // After content is loaded, set up event listeners and language
         setupEventListenersAndLanguage();
-        await load_api_workflows(); // Then load workflows
-        await loadPoses(); // Then load poses
-        // Initial UI setup that depends on all content being loaded
+        await load_api_workflows();
+        await loadPoses();
         setImageDimensions(_('input[name="image-size"]:checked')?.value || 'square');
-        // setLanguage is called by loadSharedContent
-        // renderHistory is called by setLanguage
-        // setupWebSocket is called by loadSharedContent
-        // guide/results visibility is handled by updateUIForGenerationState
-        updateUIForGenerationState(false); // Set initial state to idle
+        updateUIForGenerationState(false);
     });
 
 })(window, document);
