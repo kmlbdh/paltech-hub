@@ -466,9 +466,66 @@
             flex-shrink: 0;
         }
         /* END: Custom Dropdown Styles */
-    </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+        /* START: Poses Modal Styles */
+        html[data-theme='white'] #poses-modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        html[data-theme='dark'] #poses-modal {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        html[data-theme='white'] #poses-modal .bg-white {
+            background-color: #ffffff;
+        }
+        html[data-theme='dark'] #poses-modal .dark\:bg-gray-800 {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+        html[data-theme='white'] #poses-modal-list {
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        html[data-theme='dark'] #poses-modal-list {
+            background-color: #111827; /* bg-gray-900 */
+        }
+        html[data-theme='white'] .pose-card {
+            background-color: #ffffff;
+            border-color: #e5e7eb; /* border-gray-200 */
+        }
+        html[data-theme='dark'] .pose-card {
+            background-color: #1f2937; /* bg-gray-800 */
+            border-color: #374151; /* border-gray-700 */
+        }
+        html[data-theme='white'] .pose-card h3 {
+            color: #1f2937; /* text-gray-800 */
+        }
+        html[data-theme='dark'] .pose-card h3 {
+            color: #e5e7eb; /* text-gray-200 */
+        }
+        html[data-theme='white'] .pose-card p {
+            color: #4b5563; /* text-gray-600 */
+        }
+        html[data-theme='dark'] .pose-card p {
+            color: #9ca3af; /* text-gray-400 */
+        }
+        html[data-theme='white'] #poses-modal-close-button {
+            color: #1f2937;
+        }
+        html[data-theme='dark'] #poses-modal-close-button {
+            color: #e5e7eb;
+        }
+        html[data-theme='white'] #poses-modal-close-button:hover {
+            background-color: #e5e7eb;
+        }
+        html[data-theme='dark'] #poses-modal-close-button:hover {
+            background-color: #374151;
+        }
+        /* END: Poses Modal Styles */
+
+        .modal-open {
+            overflow: hidden;
+        }
+     </style>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="font-inter transition-colors duration-300 flex flex-col">
@@ -563,12 +620,12 @@
                         </div>
                     </details>
 
-                    <details class="space-y-4">
-                        <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="turkish_wow_title">Turkish WOW</summary>
+                    <details class="space-y-4" open>
+                        <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="customized_prompt_title">Customized Prompt</summary>
                         <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-4">
-                            <label class="flex items-center gap-2 cursor-pointer text-gray-800 dark:text-gray-200">
-                                <input id="enable-turkish-wow" type="checkbox">
-                                <span data-lang-key="enable_turkish_wow">Enable Turkish WOW Poses</span>
+                            <label class="flex items-center gap-3 cursor-pointer text-gray-800 dark:text-gray-200">
+                                <input id="enable-turkish-wow" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <span data-lang-key="enable_custom_poses">Enable Custom Poses</span>
                             </label>
                             <div id="turkish-wow-controls" class="space-y-4" style="display: none;">
                                 <label for="custom-pose-select-button" class="block text-sm font-medium text-gray-600 dark:text-gray-400" data-lang-key="pose_select_label">Select a Pose</label>

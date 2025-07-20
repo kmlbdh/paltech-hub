@@ -107,8 +107,8 @@
             reconnect_failed: "Could not reconnect to the server. Please refresh the page.",
             footer_text: "© 2024 Paltech Hub AI v0.1. All rights reserved.",
             copied_to_clipboard: "Copied to clipboard!",
-            turkish_wow_title: "Turkish WOW",
-            enable_turkish_wow: "Enable Turkish WOW Poses",
+           customized_prompt_title: "Customized Prompt",
+           enable_custom_poses: "Enable Custom Poses",
             pose_select_label: "Select a Pose",
             select_pose_placeholder: "-- Select a Pose --"
         },
@@ -161,14 +161,14 @@
             executing_status: "جاري التنفيذ:",
             finished_status: "انتهى!",
             interrupted_status: "تم الإيقاف!",
-            idle_status: "ComfyUI is idle.",
+            idle_status: "ComfyUI خامل حاليا.",
             reconnect_failed: "تعذّر الاتصال بالخادم. يُرجى تحديث الصفحة.",
             footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة.",
             copied_to_clipboard: "تم النسخ إلى الحافظة!",
-            turkish_wow_title: "تركش واو",
-            enable_turkish_wow: "تفعيل وضعيات تركش واو",
-            pose_select_label: "اختر وضعية",
-            select_pose_placeholder: "-- اختر وضعية --"
+           customized_prompt_title: "مطالبة مخصصة",
+           enable_custom_poses: "تفعيل وضعيات المودل لتركش واو",
+            pose_select_label: "اختر وضعية المودل",
+            select_pose_placeholder: "-- اختر وضعية المودل --"
         }
     };
 
@@ -289,7 +289,8 @@
         if (languageSelect) {
             languageSelect.value = langCode;
         }
-        renderHistory(); 
+        renderHistory();
+        populatePoseModal();
     }
 
     function displayModalMessage(messageKey, show = true, isLangKey = true) {
@@ -606,11 +607,12 @@
            const card = d.createElement('div');
            card.className = 'pose-card flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200';
            card.dataset.index = index;
+           const poseName = currentLanguage === 'ar' && pose.name_ar ? pose.name_ar : pose.name;
 
            card.innerHTML = `
-               <img src="${pose.image}" alt="${pose.name}" class="w-full h-48 object-cover">
+               <img src="${pose.image}" alt="${poseName}" class="w-full h-48 object-cover">
                <div class="p-3 flex flex-col flex-grow">
-                   <h3 class="font-semibold text-gray-900 dark:text-white mb-1 truncate">${pose.name}</h3>
+                   <h3 class="font-semibold text-gray-900 dark:text-white mb-1 truncate">${poseName}</h3>
                    <p class="text-xs text-gray-600 dark:text-gray-400 flex-grow">${pose.description.substring(0, 100)}...</p>
                </div>
            `;
@@ -633,14 +635,16 @@
             const selectedPoseTextSpan = _('#selected-pose-text');
 
             if (selectedPoseImg && selectedPoseTextSpan) {
+               const poseName = currentLanguage === 'ar' && selectedPose.name_ar ? selectedPose.name_ar : selectedPose.name;
                selectedPoseImg.src = selectedPose.image;
-               selectedPoseImg.alt = selectedPose.name;
+               selectedPoseImg.alt = poseName;
                selectedPoseImg.classList.remove('hidden');
-               selectedPoseTextSpan.textContent = selectedPose.name;
+               selectedPoseTextSpan.textContent = poseName;
             }
             prompt_input.value = selectedPose.description;
         }
         posesModal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
     }
 
     // Event listeners
@@ -735,13 +739,19 @@
    // Poses Modal Listeners
    if (poseSelectButton) {
        poseSelectButton.addEventListener('click', () => {
-           if (posesModal) posesModal.classList.remove('hidden');
+           if (posesModal) {
+               posesModal.classList.remove('hidden');
+               document.body.classList.add('modal-open');
+           }
        });
    }
 
    if (posesModalCloseButton) {
        posesModalCloseButton.addEventListener('click', () => {
-           if (posesModal) posesModal.classList.add('hidden');
+           if (posesModal) {
+               posesModal.classList.add('hidden');
+               document.body.classList.remove('modal-open');
+           }
        });
    }
 
