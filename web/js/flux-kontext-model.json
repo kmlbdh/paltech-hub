@@ -1,0 +1,374 @@
+{
+  "61": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "64": {
+    "inputs": {
+      "clip_name1": "t5/t5xxl_fp16.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "301": {
+    "inputs": {
+      "unet_name": "flux1-kontext-dev.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "305": {
+    "inputs": {
+      "pixels": [
+        "314",
+        0
+      ],
+      "vae": [
+        "61",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "307": {
+    "inputs": {
+      "conditioning": [
+        "368",
+        0
+      ],
+      "latent": [
+        "305",
+        0
+      ]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "Reference Latent"
+    }
+  },
+  "308": {
+    "inputs": {
+      "text": "A full-height, statuesque woman model with natural, remarkably realistic, lifelike Levantine Palestinian facial features, with natural, soft skin texture, avoiding any plastic or artificial appearance. She is wearing a white hijab and a matching outfit identical in fabric, color, and design to the one the scene. The model is seated gracefully on a tall, minimalist white cube pedestal that complements the overall scene. She sits with one leg elegantly crossed over the other, maintaining an upright posture with her back straight and shoulders relaxed. Her right hand rests gently on her knee, while her left is raised softly near her head in a natural, expressive gesture. She wears clean white sneakers. The cube’s elevated height helps showcase her tall and slender figure, with proportions that feel balanced and refined. Her full body is centered and visible in the frame, emphasizing verticality and elegance.\n\nThe setting is minimalist and softly lit, with clean studio-style lighting and neutral tones that enhance the modern and polished atmosphere. **The camera is positioned at a significant distance from the model, utilizing a wide-angle lens to capture the full environment and emphasize her height and grandeur within the spacious scene. This ensures the model appears far from the screen and viewer, maintaining a distinct presence without being overwhelmingly close.**\n\nThe image is **a full shot, highly realistic, with an emphasized vertical composition, balanced proportions, and natural shadows, capturing the essence of high fashion photography.**",
+      "clip": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "311": {
+    "inputs": {
+      "text": "Stable_Yogis_PDXL_Negatives-neg, nsfw, porn, sex, nude, topless, undressed, cleavage, nipples, nipple marks, genitalia, buttocks, exposed skin, erotic, intimate, sheer, transparent, see-through, unclothed, bare breasts, bare chest, revealing, lingerie, swimwear. low quality, blurry, grainy, artifacts, deformed, bad anatomy, extra limbs, missing limbs, extra fingers, missing fingers, fused fingers, poorly drawn hands, poorly drawn face, two heads, out of focus, distorted, dark, overexposed, underexposed, unrealistic colors, cluttered background, poor lighting. unrealistic skin, plastic skin, waxy skin, doll-like, cartoon, anime, drawing, painting, nipple through clothes, anatomical artifacts, unwanted details, clothing distortion, bad anatomy.unclear clothing details, simple fabric. nipples, nipple marks, nipple outlines, protrusion, breast outlines, visible nipples, unwanted detail, clothing distortion, anatomical artifacts, see-through clothes, sheer fabric.",
+      "clip": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "314": {
+    "inputs": {
+      "image": [
+        "357",
+        0
+      ]
+    },
+    "class_type": "FluxKontextImageScale",
+    "_meta": {
+      "title": "Flux Kontext"
+    }
+  },
+  "316": {
+    "inputs": {
+      "guidance": 50,
+      "conditioning": [
+        "307",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "318": {
+    "inputs": {
+      "seed": 582339155134246,
+      "steps": 25,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "360",
+        0
+      ],
+      "positive": [
+        "316",
+        0
+      ],
+      "negative": [
+        "311",
+        0
+      ],
+      "latent_image": [
+        "355",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "320": {
+    "inputs": {
+      "samples": [
+        "318",
+        0
+      ],
+      "vae": [
+        "61",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "355": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "357": {
+    "inputs": {
+      "image": "WhatsApp Image 2025-07-16 at 3.36.59 PM.jpeg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "360": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": true,
+        "lora": "skin texture style v5.safetensors",
+        "strength": 1
+      },
+      "lora_2": {
+        "on": true,
+        "lora": "frida V18.safetensors",
+        "strength": 1
+      },
+      "lora_3": {
+        "on": true,
+        "lora": "Super_Eye_Detailer_By_Stable_Yogi_SDPD0.safetensors",
+        "strength": 0.7
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "301",
+        0
+      ],
+      "clip": [
+        "64",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "367": {
+    "inputs": {
+      "text": "Frida, skin texture style. Stable_Yogis_PDXL_Positives.",
+      "clip": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "lora trigger words"
+    }
+  },
+  "368": {
+    "inputs": {
+      "conditioning_to": [
+        "308",
+        0
+      ],
+      "conditioning_from": [
+        "367",
+        0
+      ]
+    },
+    "class_type": "ConditioningConcat",
+    "_meta": {
+      "title": "Conditioning (Concat)"
+    }
+  },
+  "374": {
+    "inputs": {
+      "model_name": "bbox/face_yolov8m.pt"
+    },
+    "class_type": "UltralyticsDetectorProvider",
+    "_meta": {
+      "title": "UltralyticsDetectorProvider"
+    }
+  },
+  "375": {
+    "inputs": {
+      "model_name": "sam_vit_b_01ec64.pth",
+      "device_mode": "AUTO"
+    },
+    "class_type": "SAMLoader",
+    "_meta": {
+      "title": "SAMLoader (Impact)"
+    }
+  },
+  "378": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "381",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "381": {
+    "inputs": {
+      "guide_size": 1024,
+      "guide_size_for": true,
+      "max_size": 1024,
+      "seed": 432369365953567,
+      "steps": 20,
+      "cfg": 7,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.5000000000000001,
+      "feather": 20,
+      "noise_mask": true,
+      "force_inpaint": true,
+      "bbox_threshold": 0.5,
+      "bbox_dilation": 20,
+      "bbox_crop_factor": 3,
+      "sam_detection_hint": "center-1",
+      "sam_dilation": 15,
+      "sam_threshold": 0.93,
+      "sam_bbox_expansion": 0,
+      "sam_mask_hint_threshold": 0.7,
+      "sam_mask_hint_use_negative": "False",
+      "drop_size": 10,
+      "refiner_ratio": 0.2,
+      "cycle": 1,
+      "inpaint_model": true,
+      "noise_mask_feather": 20,
+      "tiled_encode": false,
+      "tiled_decode": false,
+      "image": [
+        "320",
+        0
+      ],
+      "detailer_pipe": [
+        "386",
+        0
+      ]
+    },
+    "class_type": "FaceDetailerPipe",
+    "_meta": {
+      "title": "FaceDetailer (pipe)"
+    }
+  },
+  "386": {
+    "inputs": {
+      "wildcard": "<lora:frida V18><lora:skin texture style v5>",
+      "Select to add LoRA": "Select the LoRA to add to the text",
+      "Select to add Wildcard": "Select the Wildcard to add to the text",
+      "model": [
+        "301",
+        0
+      ],
+      "clip": [
+        "360",
+        1
+      ],
+      "vae": [
+        "61",
+        0
+      ],
+      "positive": [
+        "390",
+        0
+      ],
+      "negative": [
+        "311",
+        0
+      ],
+      "bbox_detector": [
+        "374",
+        0
+      ],
+      "sam_model_opt": [
+        "375",
+        0
+      ]
+    },
+    "class_type": "ToDetailerPipe",
+    "_meta": {
+      "title": "ToDetailerPipe"
+    }
+  },
+  "390": {
+    "inputs": {
+      "text": "A **young girl model in her early 20s** with **strikingly beautiful, exquisitely detailed, and naturally realistic Levantine Palestinian facial features.** Her **skin possesses a radiant, warm, and sun-kissed olive tone, with a smooth, fresh, and youthful texture, completely free of any wrinkles or fine lines on the face or under the eyes.** Her **eyes are captivatingly large, intensely expressive, and elegantly almond-shaped, with long, dark, luxuriously full, and finely separated lashes. Beautifully defined, perfectly arched brows gracefully frame them.** The **irises hold a rich, deep, and alluring color (e.g., warm brown, deep hazel, or captivating emerald green), reflecting light with sparkling glints that draw you in.** Her **mouth is perfectly proportioned and irresistibly attractive, with naturally full, soft, and beautifully defined lips that possess a delicate, exquisite Cupid's bow.** A **subtle, enchanting, and inviting curve defines her radiant smile.** Her **cheeks are softly contoured, with a healthy, natural, and alluring flush that beautifully highlights her high cheekbones, adding to her graceful appearance.** The **face outline is exquisitely oval, with a delicate jawline that tapers gently to a refined and elegant chin, showcasing a harmonious, perfectly balanced, and highly attractive facial structure.** Every minute detail, from the luminous glow of her youthful skin to the stunning definition of her beautiful features, contributes to a truly breathtaking and captivating portrait.",
+      "clip": [
+        "64",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  }
+}
