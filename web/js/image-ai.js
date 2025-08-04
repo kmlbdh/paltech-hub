@@ -567,9 +567,9 @@
      */
     async function load_api_workflows() {
         let workflowPaths = {
-            // 'flux_kontext': '/js/flux-kontext.json'
-            'flux_kontext': '/paltech/js/flux-kontext.json',
-            'flux_kontext-model': '/paltech/js/flux-kontext-model.json'
+            'flux_kontext': '/js/flux-kontext.json'
+            // 'flux_kontext': '/paltech/js/flux-kontext.json',
+            // 'flux_kontext-model': '/paltech/js/flux-kontext-model.json'
 
         }
         for (let key in workflowPaths) {
@@ -591,7 +591,8 @@
 
     async function loadPoses() {
         try {
-            const response = await fetch('/paltech/js/poses.json');
+            const response = await fetch('/js/poses.json');
+            // const response = await fetch('/paltech/js/poses.json');
             if (!response.ok) {
                 throw new Error(`Failed to load poses.json: ${response.status} ${response.statusText}`);
             }
