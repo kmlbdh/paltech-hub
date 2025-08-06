@@ -127,6 +127,7 @@
             prompt_queue_failed: "Failed to queue prompt:",
             image_upload_failed: "Image upload failed:",
             generation_interrupted: "Generation interrupted.",
+            generation_completed: "Generation completed.",
             processing_status: "Processing:",
             executing_status: "Executing:",
             finished_status: "Finished!",
@@ -225,6 +226,7 @@
             prompt_queue_failed: "فشل في اضافة طلبك.:",
             image_upload_failed: "فشل تحميل الصورة:",
             generation_interrupted: "تم مقاطعت عملية التوليد.",
+            generation_completed: "تم الانتهاء من عملية التوليد.",
             processing_status: "معالجة:",
             executing_status: "جاري التنفيذ:",
             finished_status: "انتهى!",
@@ -693,7 +695,7 @@
             case 'executing':
                 if (data.data.node === null) {
                     updateUIForGenerationState(false);
-                    window.appUtils.displayModalMessage('generation_completed', langConfig);
+                    window.appUtils.displayNotification('generation_completed', langConfig);
                     if (nodeStatusEl) {
                         nodeStatusEl.textContent = t('finished_status', 'Finished!');
                     }
@@ -894,7 +896,7 @@
             }
             const comfyUIImageName = await window.appUtils.uploadImage(
                 window.imageGenState.uploadedImageFile,
-                t('uploading_image'),
+                'uploading_image',
                 langConfig
             );
             if (!comfyUIImageName) {

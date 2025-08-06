@@ -529,7 +529,7 @@
 
                         const comfyUIImageName = await window.appUtils.uploadImage(
                             window.promptGenState.uploadedImageFile,
-                            t('uploading_image'),
+                            'uploading_image',
                             langConfig
                         );
 
@@ -651,6 +651,20 @@
                                 node_status_el.textContent = `${languages[currentLanguage]?.processing_status || 'Processing'} ${data.data.node}`;
                             }
                             break;
+
+                            case 'executing':
+                                if (data.data.node === null) {
+                                    updateUIForGenerationState(false);
+                                    window.appUtils.displayNotification('generation_completed', langConfig);
+                                    if (node_status_el) {
+                                        node_status_el.textContent = t('finished_status', 'Finished!');
+                                    }
+                                } else {
+                                    if (node_status_el) {
+                                        node_status_el.textContent = `${t('executing_status', 'Executing')} ${data.data.node}`;
+                                    }
+                                }
+                                break;
 
                         case 'executed':
                             // ✅ Call the existing function instead of duplicating logic
