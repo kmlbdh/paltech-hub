@@ -50,7 +50,7 @@
       ],
       "image2_description": "",
       "edit_instruction": "",
-      "preset": "Beauty Product Use -> Flux Prompt",
+      "preset": "Beauty Product Use",
       "seed": 55119683492071,
       "llm_service_connector": [
         "5",
