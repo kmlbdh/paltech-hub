@@ -30,7 +30,7 @@
             // Preset Selector
 
             // Ensure this path is correct relative to image-ai.html when loaded
-            const WORKFLOW_PATH = './js/prompt-gen-test-workflow.json';
+            const WORKFLOW_PATH = './js/prompt-gen-workflow.json';
             let promptGenWorkflow = null;
             const PROMPT_HISTORY_KEY = 'promptGeneratorHistory';
             let currentLanguage = localStorage.getItem('language') || 'ar'; // Default
