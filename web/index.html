@@ -11,21 +11,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwind CSS configuration for dark mode using a selector
-        tailwind.config = {
-            darkMode: 'selector', // This tells Tailwind to look for data-theme="dark"
-            theme: {
-                extend: {
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
-                        cairo: ['Cairo', 'sans-serif'], // Add Cairo to Tailwind's font family
-                    },
-                },
-            },
-        };
-    </script>
     <style>
         /* Base styles for body */
         html[data-theme='white'] body {
