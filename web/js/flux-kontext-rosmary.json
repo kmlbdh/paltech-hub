@@ -1,0 +1,529 @@
+{
+  "61": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "305": {
+    "inputs": {
+      "pixels": [
+        "314",
+        0
+      ],
+      "vae": [
+        "61",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "307": {
+    "inputs": {
+      "conditioning": [
+        "370",
+        0
+      ],
+      "latent": [
+        "305",
+        0
+      ]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "Reference Latent"
+    }
+  },
+  "308": {
+    "inputs": {
+      "text": [
+        "392",
+        0
+      ],
+      "clip": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "311": {
+    "inputs": {
+      "text": "blurry text, distorted labels, unreadable packaging, \nlow resolution, pixelated, smudged typography,nsfw, porn, sex, nude, topless, undressed, cleavage, nipples, nipple marks, nipple outlines, protrusion, breast outlines, visible nipples, genitalia, buttocks, exposed skin, erotic, intimate, sheer, transparent, see-through, unclothed, bare breasts, bare chest, revealing, lingerie, swimwear, inappropriate anatomy, explicit content, sexualized content.\nlow quality, blurry, grainy, artifacts, deformed, bad anatomy, extra limbs, missing limbs, extra fingers, missing fingers, fused fingers, poorly drawn hands, poorly drawn face, two heads, out of focus, distorted, dark, overexposed, underexposed, unrealistic colors, cluttered background, poor lighting.\nunrealistic skin, plastic skin, waxy skin, doll-like, cartoon, anime, drawing, painting.\nblurry text, distorted labels, unreadable packaging, low resolution, pixelated, smudged typography.\nunwanted details, clothing distortion, anatomical artifacts, unclear clothing details, simple fabric, distorted legs, distorted feet, distorted hands, distorted fingers.",
+      "clip": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "314": {
+    "inputs": {
+      "image": [
+        "362",
+        0
+      ]
+    },
+    "class_type": "FluxKontextImageScale",
+    "_meta": {
+      "title": "Flux Kontext"
+    }
+  },
+  "316": {
+    "inputs": {
+      "guidance": 30,
+      "conditioning": [
+        "307",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "318": {
+    "inputs": {
+      "seed": 641949261197286,
+      "steps": 20,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "360",
+        0
+      ],
+      "positive": [
+        "316",
+        0
+      ],
+      "negative": [
+        "311",
+        0
+      ],
+      "latent_image": [
+        "355",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "320": {
+    "inputs": {
+      "samples": [
+        "318",
+        0
+      ],
+      "vae": [
+        "61",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "355": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "357": {
+    "inputs": {
+      "image": "7403C67A-1398-4E2A-B0DD-43F77F53B0F8.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "360": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": true,
+        "lora": "Hand v2.safetensors",
+        "strength": 0.85
+      },
+      "lora_2": {
+        "on": true,
+        "lora": "frida V18.safetensors",
+        "strength": 1
+      },
+      "lora_3": {
+        "on": true,
+        "lora": "skin_texture_style_v5.safetensors",
+        "strength": 0.85
+      },
+      "lora_4": {
+        "on": true,
+        "lora": "texta.safetensors",
+        "strength": 0.85
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "402",
+        0
+      ],
+      "clip": [
+        "398",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "361": {
+    "inputs": {
+      "upscale_by": 2.0000000000000004,
+      "seed": 103017269152136,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "sgm_uniform",
+      "denoise": 0.15000000000000002,
+      "mode_type": "Chess",
+      "tile_width": 520,
+      "tile_height": 520,
+      "mask_blur": 6,
+      "tile_padding": 32,
+      "seam_fix_mode": "None",
+      "seam_fix_denoise": 1,
+      "seam_fix_width": 64,
+      "seam_fix_mask_blur": 8,
+      "seam_fix_padding": 16,
+      "force_uniform_tiles": true,
+      "tiled_decode": false,
+      "image": [
+        "357",
+        0
+      ],
+      "model": [
+        "363",
+        0
+      ],
+      "positive": [
+        "369",
+        0
+      ],
+      "negative": [
+        "311",
+        0
+      ],
+      "vae": [
+        "61",
+        0
+      ],
+      "upscale_model": [
+        "365",
+        0
+      ]
+    },
+    "class_type": "UltimateSDUpscale",
+    "_meta": {
+      "title": "Ultimate SD Upscale"
+    }
+  },
+  "362": {
+    "inputs": {
+      "width": [
+        "380",
+        0
+      ],
+      "height": [
+        "380",
+        1
+      ],
+      "upscale_method": "lanczos",
+      "keep_proportion": "resize",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 2,
+      "device": "cpu",
+      "image": [
+        "361",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "363": {
+    "inputs": {
+      "lora_name": "FLUX.1-Turbo-Alpha.safetensors",
+      "strength_model": 1.0000000000000002,
+      "model": [
+        "360",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "365": {
+    "inputs": {
+      "model_name": "4x_NMKD-Siax_200k.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "369": {
+    "inputs": {
+      "text": "Frida, skin texture style. Stable_Yogis_PDXL_Positives, Detailed hand.Professional beauty product photography, \ncrisp, clear labels, sharp typography, \nstudio lighting, white background, \n[cream bottle/serum bottle/shampoo bottle], \nminimalist composition, high detail, \nproduct marketing image.",
+      "clip": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "lora trigger words"
+    }
+  },
+  "370": {
+    "inputs": {
+      "conditioning_to": [
+        "308",
+        0
+      ],
+      "conditioning_from": [
+        "369",
+        0
+      ]
+    },
+    "class_type": "ConditioningConcat",
+    "_meta": {
+      "title": "Conditioning (Concat)"
+    }
+  },
+  "371": {
+    "inputs": {
+      "upscale_by": 2.0000000000000004,
+      "seed": 1020897141314448,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "sgm_uniform",
+      "denoise": 0.10000000000000002,
+      "mode_type": "Chess",
+      "tile_width": 1024,
+      "tile_height": 1024,
+      "mask_blur": 6,
+      "tile_padding": 32,
+      "seam_fix_mode": "None",
+      "seam_fix_denoise": 1,
+      "seam_fix_width": 64,
+      "seam_fix_mask_blur": 8,
+      "seam_fix_padding": 16,
+      "force_uniform_tiles": true,
+      "tiled_decode": false,
+      "image": [
+        "320",
+        0
+      ],
+      "model": [
+        "363",
+        0
+      ],
+      "positive": [
+        "370",
+        0
+      ],
+      "negative": [
+        "311",
+        0
+      ],
+      "vae": [
+        "61",
+        0
+      ],
+      "upscale_model": [
+        "365",
+        0
+      ]
+    },
+    "class_type": "UltimateSDUpscale",
+    "_meta": {
+      "title": "Ultimate SD Upscale"
+    }
+  },
+  "372": {
+    "inputs": {
+      "width": [
+        "380",
+        0
+      ],
+      "height": [
+        "380",
+        1
+      ],
+      "upscale_method": "lanczos",
+      "keep_proportion": "resize",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 2,
+      "device": "cpu",
+      "image": [
+        "371",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "380": {
+    "inputs": {
+      "latent": [
+        "355",
+        0
+      ]
+    },
+    "class_type": "ImageGenResolutionFromLatent",
+    "_meta": {
+      "title": "Generation Resolution From Latent"
+    }
+  },
+  "388": {
+    "inputs": {
+      "question": "Describe this image in detail.",
+      "seed": 941018364367695,
+      "temperature": 0.1,
+      "top_p": 1,
+      "max_new_tokens": 512,
+      "model": [
+        "389",
+        0
+      ],
+      "processor": [
+        "389",
+        1
+      ],
+      "image": [
+        "357",
+        0
+      ]
+    },
+    "class_type": "JanusImageUnderstanding",
+    "_meta": {
+      "title": "Janus Image Understanding"
+    }
+  },
+  "389": {
+    "inputs": {
+      "model_name": "deepseek-ai/Janus-Pro-1B"
+    },
+    "class_type": "JanusModelLoader",
+    "_meta": {
+      "title": "Janus Model Loader"
+    }
+  },
+  "392": {
+    "inputs": {
+      "image1_description": [
+        "388",
+        0
+      ],
+      "image2_description": "",
+      "edit_instruction": "Make an arab muslim woman use the dropper of the serum by her right hand and carry the serum bottle without the dropper cover on the top",
+      "preset": "Beauty Product Use -> Flux Prompt",
+      "seed": 631960239289353,
+      "llm_service_connector": [
+        "397",
+        0
+      ]
+    },
+    "class_type": "LocalKontextPromptGenerator",
+    "_meta": {
+      "title": "Local Kontext Prompt Generator 🐑"
+    }
+  },
+  "397": {
+    "inputs": {
+      "local_gguf_model_name": "Hermes-2-Pro-Llama-3-8B-Q8_0",
+      "device": "GPU",
+      "n_gpu_layers": -1
+    },
+    "class_type": "SetLocalGGUFLLMServiceConnector",
+    "_meta": {
+      "title": "Set Local GGUF LLM Service Connector 🐑"
+    }
+  },
+  "398": {
+    "inputs": {
+      "clip_name1": "clip_l.safetensors",
+      "clip_name2": "t5-v1_1-xxl-encoder-f16.gguf",
+      "type": "flux"
+    },
+    "class_type": "DualCLIPLoaderGGUF",
+    "_meta": {
+      "title": "DualCLIPLoader (GGUF)"
+    }
+  },
+  "400": {
+    "inputs": {
+      "unet_name": "flux1-kontext-dev.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "401": {
+    "inputs": {
+      "filename_prefix": "rosemary",
+      "images": [
+        "372",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "402": {
+    "inputs": {
+      "unet_name": "flux1-kontext-dev-Q8_0.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  }
+}

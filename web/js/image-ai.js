@@ -1,29 +1,20 @@
-(async (window, d, undefined) => {
-    const _ = (selector, contex = d) => contex.querySelector(selector);
+(async (window, document, undefined) => {
+    const _ = (selector, contex = document) => contex.querySelector(selector);
 
-    const workflows = {};
-    let IS_GENERATING = false;
-    let lastUploadedComfyUIName = null;
-    let lastUploadedFileIdentifier = null;
-    let uploadedImageFile = null;
-    let ws;
-    let reconnectAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 5;
-    const RECONNECT_DELAY_MS = 3000;
-    const client_id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });
+    if (window.__IMAGE_AI_SCRIPT_LOADED) return;
+        window.__IMAGE_AI_SCRIPT_LOADED = true;
 
     const generate = _('#generate');
     const interrupt_button = _('#interrupt');
     const progressbar = _('#main-progress');
     const seed_input = _('#main-seed');
     const is_random_input = _('#is-random');
-    const modal = _('#app-modal');
-    const modalMessageEl = _('#modal-message');
+
     const modalCloseButton = _('#modal-close-button');
     const results = _('#results');
     const batch_size_input = _('#batch-size-input');
-   const guidance_scale_input = _('#guidance-scale-input');
-   const guidance_scale_value_el = _('#guidance-scale-value');
+    const guidance_scale_input = _('#guidance-scale-input');
+    const guidance_scale_value_el = _('#guidance-scale-value');
     const prompt_input = _('#prompt-input');
     const img_height_input = _('#image-height');
     const img_width_input = _('#image-width');
@@ -32,13 +23,15 @@
     const node_status_el = _('#current-node-status');
     const display_uploaded_image_el = _("#display-uploaded-image");
     const guideContainer = _("#guide-container");
-    const notificationBar = _('#notification-bar');
-    const themeToggle = _('#theme-toggle');
-    const themeIcon = _('#theme-icon');
+
     const languageSelect = _('#language-select');
-    const historyContainer = _('#history-container');
     const clearHistoryButton = _('#clear-history-button');
-    const backButton = _('#back-button');
+
+    // --- Element Selectors (Prompt Generation Tab) ---
+    const tabButtons = document.querySelectorAll('.tab-button-link'); // Updated selector
+    const imageGenerationView = _('#image-generation-view');
+    const promptGenerationView = _('#prompt-generation-view');
+    const promptGeneratorLoadingIndicator = promptGenerationView?.querySelector('[data-lang-key="prompt_generator_loading"]');
 
     // Turkish WOW elements
     const enableTurkishWowCheckbox = _('#enable-turkish-wow');
@@ -47,12 +40,45 @@
     const poseSelectButton = _('#custom-pose-select-button');
     const selectedPoseText = _('#selected-pose-text');
     const poseSelectValueInput = _('#pose-select-value');
-   const posesModal = _('#poses-modal');
-   const posesModalList = _('#poses-modal-list');
-   const posesModalCloseButton = _('#poses-modal-close-button');
+    const posesModal = _('#poses-modal');
+    const posesModalList = _('#poses-modal-list');
+    // const posesModalCloseButton = _('#poses-modal-close-button');
     let posesData = []; // To store the loaded poses from poses.json
 
-    const SESSION_HISTORY_KEY = 'paltech_image_history';
+    // --- State Variables ---
+    const workflows = {};
+    let IS_GENERATING = false;
+
+    // --- Workflow Node Constants ---
+    const CLIP_TEXT_ENCODE_NODE = '308';
+    const K_SAMPLER_NODE = '318';
+    const EMPTY_LATENT_IMAGE_NODE = '355';
+    const KONTEXT_GUIDANCE_NODE = '316';
+    const LOAD_IMAGE_NODE = '357';
+
+
+    window.imageGenState = window.imageGenState || {
+        uploadedImageFile: null,
+        lastUploadedComfyUIName: null,
+        lastUploadedFileIdentifier: null
+    };
+
+    let activeView = 'image-generation';
+    let promptGeneratorLoaded = false; // Tracks if prompt gen content is loaded
+    let currentLanguage = localStorage.getItem('language') || 'ar'; // Changed default to 'ar'
+
+    // --- Constants ---
+    const SESSION_HISTORY_KEY = 'imagePromptHistory';
+    const WORKFLOW_PATHS = {
+        flux_kontext: '/js/flux-kontext-rosmary.json',
+        flux_kontext_model: '/js/flux-kontext-model.json'
+        // flux_kontext: '/paltech/js/flux-kontext.json',
+        // flux_kontext_model: '/paltech/js/flux-kontext-model.json'
+    };
+    // const POSES_FOLDER = '/paltech/js/';
+    const POSES_FOLDER = './js/';
+    const POSES_JSON_PATH = POSES_FOLDER + 'poses.json';
+    const PROMPT_GENERATOR_JS_PATH = './js/prompt-generator.js'; // Ensure this path is correct relative to image-ai.html
 
     // Language Data
     const languages = {
@@ -109,12 +135,50 @@
             reconnect_failed: "Could not reconnect to the server. Please refresh the page.",
             footer_text: "© 2024 Paltech Hub AI v0.1. All rights reserved.",
             copied_to_clipboard: "Copied to clipboard!",
-           customized_prompt_title: "Customized Prompt",
-           enable_custom_poses: "Enable Custom Poses",
+            customized_prompt_title: "Customized Prompt",
+            enable_custom_poses: "Enable Custom Poses",
             pose_select_label: "Select a Pose",
             select_pose_placeholder: "-- Select a Pose --",
-           guidance_scale_label: "Guidance Scale",
-           guidance_scale_tooltip: "Higher values result in images that more closely match the prompt but may lack some creativity. Lower values result in images that are less closely matched to the prompt but may be more creative."
+            failed_load_poses_json: "Failed to load pose data. Please check the poses.json file.",
+            guidance_scale_label: "Guidance Scale",
+            guidance_scale_tooltip: "Higher values result in images that more closely match the prompt but may lack some creativity. Lower values result in images that are less closely matched to the prompt but may be more creative.",
+            // Tab Navigation
+            tab_image_generation: "Image Generation",
+            tab_prompt_generation: "Prompt Generation",
+            prompt_generator_loading: "Loading Prompt Generator...",
+            prompt_generator_load_error: "Failed to load Prompt Generator. Please try again later.",
+            prompt_generator_init_error: "Failed to initialize Prompt Generator. Please try again later.",
+
+            prompt_generator_title: "Prompt Generator",
+            prompt_generator_intro: "Generate AI prompts based on an image and your instructions.",
+            edit_instruction_title: "Edit Instruction",
+            edit_instruction_placeholder: "Describe how you want to modify the image...",
+            image_upload_title: "Image To Upload",
+            select_image_button: "Select Image",
+            generate_prompt_button: "Generate Prompt",
+            generated_prompt_title: "Generated Prompt",
+            prompt_result_placeholder: "Generated prompt will appear here...",
+            prompt_output_label: "Prompt Output (Editable):",
+            copied_to_clipboard: "Copied to clipboard!",
+            copy_to_clipboard: "Copy",
+            use_prompt_in_image_ai: "Use in Image AI",
+            image_generation_workflow_not_loaded: "Workflow not loaded. Please ensure the workflow JSON is accessible and try again.",
+            prompt_generation_workflow_not_loaded: "Prompt generation workflow not loaded. Please check the path and server status.",
+            prompt_history_title: "Prompt History",
+            prompt_history_empty_message: "No prompt history yet.",
+            clear_prompt_history_button: "Clear History",
+            // Preset Selection (Ensure these match prompt-generator.js keys)
+            preset_selection_title: "Preset Selection",
+            select_preset_label: "Choose a Preset:",
+            preset_kid_clothes: "Kid Clothes",
+            preset_womens_clothes: "Women’s Clothes",
+            preset_beauty_product_use: "Beauty Product Use",
+            preset_beauty_product_display: "Beauty Product Display",
+            // Tab Navigation
+
+            uploading_image: "Uploading image...",
+            prompt_required: "Please enter a prompt.",
+            image_required: "Please upload an image.",
         },
         ar: {
             generation_params_title: "معلمات التوليد",
@@ -169,17 +233,141 @@
             reconnect_failed: "تعذّر الاتصال بالخادم. يُرجى تحديث الصفحة.",
             footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة.",
             copied_to_clipboard: "تم النسخ إلى الحافظة!",
-           customized_prompt_title: "مطالبة مخصصة",
-           enable_custom_poses: "تفعيل وضعيات المودل (الملابس)",
+            customized_prompt_title: "مطالبة مخصصة",
+            enable_custom_poses: "تفعيل وضعيات المودل (الملابس)",
             pose_select_label: "اختر وضعية المودل",
             select_pose_placeholder: "-- اختر وضعية المودل --",
-           guidance_scale_label: "مقياس قوةالمطالبة",
-           guidance_scale_tooltip: "القيم الأعلى تؤدي إلى صور تتطابق بشكل وثيق مع المطالبة ولكنها قد تفتقر إلى بعض الإبداع. القيم الأقل تؤدي إلى صور أقل تطابقًا مع المطالبة ولكنها قد تكون أكثر إبداعًا."
+            failed_load_poses_json: "فشل في تحميل  ملف الوضعيات. يُرجى التأكد من توفر ملف الوضعيات في مسار صحيح.",
+            guidance_scale_label: "مقياس قوةالمطالبة",
+            guidance_scale_tooltip: "القيم الأعلى تؤدي إلى صور تتطابق بشكل وثيق مع المطالبة ولكنها قد تفتقر إلى بعض الإبداع. القيم الأقل تؤدي إلى صور أقل تطابقًا مع المطالبة ولكنها قد تكون أكثر إبداعًا.",
+            // Tab Navigation
+            tab_image_generation: "توليد الصور",
+            tab_prompt_generation: "توليد المطالبات",
+            prompt_generator_loading: "جارٍ تحميل مولد المطالبات...",
+            prompt_generator_load_error: "فشل في تحميل مولد المطالبات. يُرجى المحاولة مرة أخرى لاحقًا.",
+            prompt_generator_init_error: "فشل في تهيئة مولد المطالبات. يُرجى المحاولة مرة أخرى لاحقًا.",
+
+            // Prompt Generator Tab UI Text
+            prompt_generator_title: "مولد المطالبات",
+            prompt_generator_intro: "أنشئ مطالبات ذكاء اصطناعي بناءً على صورة وتعليماتك.",
+            edit_instruction_title: "تعليمات التعديل",
+            edit_instruction_placeholder: "صف كيف تريد تعديل الصورة...",
+            image_upload_title: "تحميل الصورة",
+            select_image_button: "اختر صورة",
+            generate_prompt_button: "توليد المطالبة",
+            interrupt_button: "إيقاف",
+            generated_prompt_title: "المطالبة المولدة",
+            prompt_result_placeholder: "ستظهر المطالبة المولدة هنا...",
+            prompt_output_label: "إخراج المطالبة (قابل للتحرير):",
+            copied_to_clipboard: "تم النسخ إلى الحافظة!",
+            copy_to_clipboard: "نسخ",
+            use_prompt_in_image_ai: "استخدام في صور الذكاء الاصطناعي",
+            image_generation_workflow_not_loaded: "لم يتم تحميل مسار عمل توليد الصور. يرجى التحقق من المسار وحالة الخادم.",
+            prompt_generation_workflow_not_loaded: "لم يتم تحميل مسار عمل توليد المطالبات. يرجى التحقق من المسار وحالة الخادم.",
+            prompt_history_title: "سجل المطالبات",
+            prompt_history_empty_message: "لا يوجد سجل مطالبات حتى الآن.",
+            clear_prompt_history_button: "مسح السجل",
+            // Preset Selection (Ensure these match prompt-generator.js keys)
+            preset_selection_title: "اختيار الإعدادات المسبقة",
+            select_preset_label: "اختر إعدادًا مسبقًا:",
+            preset_kid_clothes: "ملابس الأطفال",
+            preset_womens_clothes: "ملابس النساء",
+            preset_beauty_product_use: "استخدام منتج تجميل",
+            preset_beauty_product_display: "عرض منتج تجميل",
+
+            uploading_image: "جاري تحميل الصورة...",
+            prompt_required: "الرجاء إدخال مطالبة.",
+            image_required: "الرجاء تحميل صورة.",
         }
     };
 
-    let currentLanguage = localStorage.getItem('language') || 'ar'; // Changed default to 'ar'
+    const langConfig = { languages, currentLanguage };
 
+    // === GLOBAL WEBSOCKET MANAGER ===
+    if (!window.sharedWS) {
+        window.sharedWS = {
+            ws: null,
+            client_id: 'page-' + Math.random().toString(36).substring(2, 15),
+            ready: false,
+            reconnectAttempts: 0,
+            MAX_RECONNECT_ATTEMPTS: 5,
+            RECONNECT_DELAY_MS: 9000,
+            listeners: [],
+            _initialized: false, // Prevent double connect
+
+            connect() {
+                if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+                    return;
+                }
+
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                this.ws = new WebSocket(`${protocol}//${window.location.host}/ws?clientId=${this.client_id}`);
+
+                this.ws.onopen = () => {
+                    console.log('✅ Global WebSocket connected:', this.client_id);
+                    this.ready = true;
+                    this.reconnectAttempts = 0;
+                    window.appUtils.displayNotification('ws_connected_message', langConfig);
+                };
+
+                this.ws.onmessage = (event) => {
+                    if (event.data instanceof Blob) return;
+                    let data;
+                    try {
+                        data = JSON.parse(event.data);
+                    } catch (e) {
+                        console.error('Failed to parse WebSocket message:', e);
+                        return;
+                    }
+
+                    this.listeners.forEach(({ module, handler }) => {
+                        try {
+                            handler(data);
+                        } catch (err) {
+                            console.error(`Error in ${module} WebSocket handler:`, err);
+                        }
+                    });
+                };
+
+                this.ws.onclose = () => {
+                    console.warn('❌ WebSocket disconnected. Attempting to reconnect...');
+                    this.ready = false;
+                    this.ws = null;
+
+                    if (this.reconnectAttempts < this.MAX_RECONNECT_ATTEMPTS) {
+                        this.reconnectAttempts++;
+                        setTimeout(() => this.connect(), this.RECONNECT_DELAY_MS);
+                        window.appUtils.displayNotification('ws_connecting_message', langConfig);
+                    } else {
+                        window.appUtils.displayNotification('reconnect_failed', langConfig);
+                    }
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('🚨 WebSocket Error:', error);
+                    window.appUtils.displayNotification('ws_error_message', langConfig);
+                };
+            },
+
+            addListener(moduleName, handler) {
+                this.listeners.push({ module: moduleName, handler });
+                if (this.ready && this.ws) {
+                    console.log(`👂 ${moduleName} listening to WebSocket`);
+                }
+            },
+
+            removeListener(moduleName) {
+                this.listeners = this.listeners.filter(l => l.module !== moduleName);
+            }
+        };
+    }
+
+    // Connect only once
+    if (!window.sharedWS._initialized) {
+        window.sharedWS._initialized = true;
+        window.sharedWS.connect();
+    }
+    
     async function loadSharedContent() {
         try {
             // Load header
@@ -208,47 +396,88 @@
         }
     }
 
+    function updateLanguageInContext(context, langCode, languagePack) {
+        if (!context || !langCode || !languagePack) {
+            console.warn("[updateLanguageInContext] Invalid arguments provided.", { context, langCode, languagePack });
+            return;
+        }
+
+        const elementsToUpdate = context.querySelectorAll('[data-lang-key]');
+        elementsToUpdate.forEach(element => {
+            const key = element.getAttribute('data-lang-key');
+            if (languagePack[key]) {
+                // console.log(`[updateLanguageInContext] Updating element with key '${key}' to '${languagePack[key]}'`, element);
+                if (element.textContent === languagePack[key] || element.placeholder === languagePack[key]) 
+                    return;
+                
+                if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
+                    element.placeholder = languagePack[key];
+                } else if (element.tagName === 'TEXTAREA' && element.hasAttribute('placeholder')) {
+                    element.placeholder = languagePack[key];
+                } else if (element.tagName === 'TITLE') {
+                    // Note: Updating document.title via an element's textContent might not work as expected
+                    // if the element itself isn't the <title> tag. Consider passing document.title separately if needed.
+                    element.textContent = languagePack[key];
+                } else if (element.tagName === 'OPTION') {
+                    element.textContent = languagePack[key];
+                } else {
+                    // General case for <p>, <span>, <div>, <h1>-<h6>, <summary>, etc.
+                    element.innerHTML = languagePack[key];
+                }
+            } else if (key) { // Warn only if a key attribute was present but not found
+                console.warn(`[updateLanguageInContext] Key '${key}' not found in language pack for '${langCode}'.`, element);
+            }
+        });
+    }
+    // --- End Utility Function ---
+
     function setupEventListenersAndLanguage() {
         // Elements from the header (now directly in HTML via placeholder)
         const themeToggle = _('#theme-toggle');
         const themeIcon = _('#theme-icon');
         const languageSelect = _('#language-select');
         const backButton = _('#back-button');
+        window.appUtils.themeSwitcher(themeToggle, themeIcon);
 
         // Theme Toggle Logic
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme) {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-            if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '💡';
-        } else {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                if (themeIcon) themeIcon.textContent = '🌙';
-            } else {
-                document.documentElement.setAttribute('data-theme', 'white');
-                if (themeIcon) themeIcon.textContent = '💡';
-            }
-        }
+        // const currentTheme = localStorage.getItem('theme');
+        // if (currentTheme) {
+        //     document.documentElement.setAttribute('data-theme', currentTheme);
+        //     if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '💡';
+        // } else {
+        //     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        //         document.documentElement.setAttribute('data-theme', 'dark');
+        //         if (themeIcon) themeIcon.textContent = '🌙';
+        //     } else {
+        //         document.documentElement.setAttribute('data-theme', 'white');
+        //         if (themeIcon) themeIcon.textContent = '💡';
+        //     }
+        // }
 
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                let theme = document.documentElement.getAttribute('data-theme');
-                if (theme === 'white') {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                    if (themeIcon) themeIcon.textContent = '🌙';
-                } else {
-                    document.documentElement.setAttribute('data-theme', 'white');
-                    localStorage.setItem('theme', 'white');
-                    if (themeIcon) themeIcon.textContent = '💡';
-                }
-            });
-        }
+        // if (themeToggle) {
+        //     themeToggle.addEventListener('click', () => {
+        //         let theme = document.documentElement.getAttribute('data-theme');
+        //         if (theme === 'white') {
+        //             document.documentElement.setAttribute('data-theme', 'dark');
+        //             localStorage.setItem('theme', 'dark');
+        //             if (themeIcon) themeIcon.textContent = '🌙';
+        //         } else {
+        //             document.documentElement.setAttribute('data-theme', 'white');
+        //             localStorage.setItem('theme', 'white');
+        //             if (themeIcon) themeIcon.textContent = '💡';
+        //         }
+        //     });
+        // }
 
         // Language Switcher Logic
         if (languageSelect) {
             languageSelect.addEventListener('change', (event) => {
-                setLanguage(event.target.value);
+                console.log('Language changed:', event.target.value);
+                const langCode = event.target.value;
+                window.appUtils.setLanguage(langCode, langConfig, () => {
+                    renderHistory();
+                    populatePoseModal();
+                });
             });
         }
 
@@ -258,66 +487,12 @@
         }
 
         // Initial UI setup
-        setLanguage(currentLanguage); // Set language on initial load
+        window.appUtils.setLanguage(langConfig.currentLanguage, langConfig,()=>{}); // Set language on initial load
         renderHistory(); // Render history on initial load
-        setupWebSocket(); // Keep WebSocket connected on page load for status updates
+        // setupWebSocket(); // Keep WebSocket connected on page load for status updates
         // Ensure guide is visible on initial load
         if (guideContainer) guideContainer.classList.remove('hidden');
         if (results) results.classList.add('hidden');
-    }
-
-    function setLanguage(langCode) {
-        currentLanguage = langCode;
-        localStorage.setItem('language', langCode);
-        document.documentElement.lang = langCode;
-        document.documentElement.dir = (langCode === 'ar') ? 'rtl' : 'ltr';
-
-        // Update all elements with data-lang-key
-        d.querySelectorAll('[data-lang-key]').forEach(element => {
-            const key = element.getAttribute('data-lang-key');
-            if (languages[langCode] && languages[langCode][key]) {
-                if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
-                    element.placeholder = languages[langCode][key];
-                } else if (element.tagName === 'TEXTAREA' && element.hasAttribute('placeholder')) {
-                    element.placeholder = languages[langCode][key];
-                } else {
-                    element.innerHTML = languages[langCode][key];
-                }
-            }
-        });
-        
-        const step5DescElement = _('[data-lang-key="step5_desc"] strong');
-        if (step5DescElement) {
-            step5DescElement.className = 'text-[#3c32c8]'; // Reapply the color class
-        }
-
-        const languageSelect = _('#language-select');
-        if (languageSelect) {
-            languageSelect.value = langCode;
-        }
-        renderHistory();
-        populatePoseModal();
-    }
-
-    function displayModalMessage(messageKey, show = true, isLangKey = true) {
-        if (modalMessageEl && modal) {
-            let messageText = isLangKey ? languages[currentLanguage][messageKey] : messageKey;
-            modalMessageEl.innerHTML = messageText;
-            if (show) modal.classList.remove('hidden');
-            else modal.classList.add('hidden');
-        }
-    }
-
-    function displayNotification(messageKey, duration = 5000, isLangKey = true) {
-        if (notificationBar) {
-            let messageText = isLangKey ? languages[currentLanguage][messageKey] : messageKey;
-            notificationBar.textContent = messageText;
-            notificationBar.classList.add('show');
-
-            setTimeout(() => {
-                notificationBar.classList.remove('show');
-            }, duration);
-        }
     }
 
     function updateUIForGenerationState(isGenerating) {
@@ -392,20 +567,11 @@
                 break;
         }
     }
-    
-    async function queue_prompt(prompt = {}) {
-        const data = { 'prompt': prompt, 'client_id': client_id };
-        const response = await fetch('/prompt', {
-            method: 'POST', cache: 'no-cache', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
-        });
-        if (!response.ok) throw new Error(`${languages[currentLanguage].prompt_queue_failed} ${response.status} - ${await response.text()}`);
-        return response.json();
-    }
 
     function handleImagePreview(file) {
-        uploadedImageFile = file;
+        window.imageGenState.uploadedImageFile = file;
         if (!display_uploaded_image_el) return;
-        if (uploadedImageFile) {
+        if (window.imageGenState.uploadedImageFile) {
             const reader = new FileReader();
             reader.onload = () => {
                 const img = new Image();
@@ -415,7 +581,7 @@
                 };
                 img.src = reader.result;
             };
-            reader.readAsDataURL(uploadedImageFile);
+            reader.readAsDataURL(window.imageGenState.uploadedImageFile);
         } else {
             display_uploaded_image_el.style.backgroundImage = 'none';
             display_uploaded_image_el.innerHTML = `<span class="text-gray-500 dark:text-gray-400" data-lang-key="image_preview_placeholder">${languages[currentLanguage].image_preview_placeholder}</span>`;
@@ -437,45 +603,70 @@
         return historyString ? JSON.parse(historyString) : [];
     }
 
+    function buildHistoryHTMLEl(item) {
+        // Create container
+        const historyItemDiv = document.createElement('div');
+        historyItemDiv.className = 'history-item';
+
+        // Create image
+        const img = document.createElement('img');
+        img.className = 'rounded-md';
+        img.src = item.imageUrl;
+        img.alt = 'Generated Image'; // Always provide meaningful alt text
+
+        // Create prompt paragraph
+        const p = document.createElement('p');
+        p.className = 'history-item-prompt';
+        p.textContent = item.promptText; // Safe: textContent prevents XSS
+
+        // Append in desired order
+        historyItemDiv.appendChild(img);
+        historyItemDiv.appendChild(p);
+
+        // Attach full prompt as data attribute for copying
+        historyItemDiv.dataset.fullPrompt = item.promptText;
+
+        return historyItemDiv;
+    }
+
     function renderHistory() {
         const historyContainer = _('#history-container');
         if (!historyContainer) return;
+
         const history = loadHistory();
+        
+        // Clear previous content
         historyContainer.innerHTML = '';
 
         if (history.length === 0) {
-            historyContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-sm" data-lang-key="history_empty_message">${languages[currentLanguage].history_empty_message}</p>`;
-        } else {
-            history.forEach(item => {
-                const historyItemDiv = d.createElement('div');
-                historyItemDiv.className = 'history-item';
-                historyItemDiv.innerHTML = `
-                    <img src="${item.imageUrl}" alt="Generated Image" class="rounded-md">
-                    <p class="history-item-prompt">${item.promptText}</p>
-                `;
-                const promptElement = historyItemDiv.querySelector('.history-item-prompt');
-                if (promptElement) {
-                    promptElement.addEventListener('click', () => {
-                        const textarea = document.createElement('textarea');
-                        textarea.value = item.promptText;
-                        document.body.appendChild(textarea);
-                        textarea.select();
-                        try {
-                            const successful = document.execCommand('copy');
-                            if (successful) {
-                                displayNotification('copied_to_clipboard', 2000);
-                            } else {
-                                displayNotification('Failed to copy!', 2000, false);
-                            }
-                        } catch (err) {
-                            displayNotification('Failed to copy!', 2000, false);
-                        }
-                        document.body.removeChild(textarea);
-                    });
-                }
-                historyContainer.appendChild(historyItemDiv);
-            });
+            // ✅ Safe: Create empty message using DOM methods
+            const emptyMessage = document.createElement('p');
+            emptyMessage.className = 'text-gray-500 dark:text-gray-400 text-sm';
+            emptyMessage.dataset.langKey = 'history_empty_message';
+
+            // Fallback in case language key is missing
+            const emptyText = languages[currentLanguage]?.history_empty_message || 'No history yet.';
+            emptyMessage.textContent = emptyText;
+
+            historyContainer.appendChild(emptyMessage);
+            return;
         }
+
+        // Render each history item
+        history.forEach(item => {
+            const historyItemDiv = buildHistoryHTMLEl(item);
+
+            // Find the prompt element to attach click-to-copy
+            const promptElement = historyItemDiv.querySelector('.history-item-prompt');
+            if (promptElement) {
+                promptElement.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent any container bubbling
+                    copyTextToClipboard(item.promptText);
+                });
+            }
+
+            historyContainer.appendChild(historyItemDiv);
+        });
     }
 
     function clearHistory() {
@@ -483,107 +674,114 @@
         renderHistory();
     }
     
-    function setupWebSocket() {
-        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        ws = new WebSocket(`${protocol}//${window.location.host}/ws?clientId=${client_id}`);
+    // Register with global WebSocket
+    window.sharedWS.addListener('image-generator', function(data) {
+        const nodeStatusEl = document.querySelector('#node-status');
+        const results = document.querySelector('#results');
+        const guideContainer = document.querySelector('#guide-container');
 
-        ws.onopen = () => {
-            console.log('WebSocket connected.');
-            reconnectAttempts = 0;
-            displayNotification('WebSocket connected.', 3000, false);
-        };
+        const t = (key, fallback) => languages[currentLanguage]?.[key] || fallback;
 
-        ws.onmessage = (event) => {
-            if (event.data instanceof Blob) {
-                return;
-            }
-            try {
-                const data = JSON.parse(event.data);
-                switch (data.type) {
-                    case 'progress':
-                        updateProgress(data.data.value, data.data.max);
-                        if (data.data.node && node_status_el) node_status_el.innerText = `${languages[currentLanguage].processing_status} ${data.data.node}`;
-                        break;
-                    case 'executing':
-                        if (data.data.node === null) {
-                            if (node_status_el) node_status_el.innerText = languages[currentLanguage].finished_status;
-                        } else {
-                            if (node_status_el) node_status_el.innerText = `${languages[currentLanguage].executing_status} ${data.data.node}`;
-                        }
-                        break;
-                    case 'executed':
-                        if (results && data.data.output && 'images' in data.data.output) {
-                            const gridClass = data.data.output.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
-                            results.innerHTML = `<div class="grid ${gridClass} gap-4">${data.data.output.images.map(image => {
-                                const imageUrl = `/view?filename=${image.filename}&subfolder=${image.subfolder}&type=${image.type}`;
-                                saveHistoryItem(imageUrl, prompt_input.value);
-                                return `<div><a href="${imageUrl}" target="_blank"><img src="${imageUrl}" class="rounded-lg shadow-lg"></a></div>`;
-                            }).join('')}</div>`;
-                            if (guideContainer) guideContainer.classList.add('hidden');
-                            if (results) results.classList.remove('hidden');
-                        }
-                        break;
-                    case 'execution_interrupted':
-                        updateUIForGenerationState(false);
-                        displayModalMessage('generation_interrupted', true);
-                        if (node_status_el) node_status_el.innerText = languages[currentLanguage].interrupted_status;
-                        break;
-                    case 'status':
-                        updateUIForGenerationState(data.data.status.exec_info.queue_remaining > 0);
-                        if (!IS_GENERATING) {
-                            console.log(languages[currentLanguage].idle_status);
-                        }
-                        break;
-                    default:
-                        console.log('Unknown WS message type:', data.type);
+        switch (data.type) {
+            case 'progress':
+                updateProgress(data.data.value, data.data.max);
+                if (data.data.node && nodeStatusEl) {
+                    nodeStatusEl.textContent = `${t('processing_status', 'Processing')} ${data.data.node}`;
                 }
-            } catch (error) {
-                console.error('Error parsing WebSocket message:', error);
-            }
-        };
+                break;
 
-        ws.onclose = () => {
-            console.warn('WebSocket disconnected.');
-            updateUIForGenerationState(false);
-            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                reconnectAttempts++;
-                setTimeout(setupWebSocket, RECONNECT_DELAY_MS);
-                displayNotification('ws_connecting_message', 3000);
-            } else {
-                displayNotification('reconnect_failed', 5000);
-            }
-        };
-    
-        ws.onerror = function() {
-            console.error('WebSocket Error. Attempting to reconnect via onclose.');
-            displayNotification('ws_error_message', 5000);
-        };
+            case 'executing':
+                if (data.data.node === null) {
+                    updateUIForGenerationState(false);
+                    window.appUtils.displayModalMessage('generation_completed', langConfig);
+                    if (nodeStatusEl) {
+                        nodeStatusEl.textContent = t('finished_status', 'Finished!');
+                    }
+                } else {
+                    if (nodeStatusEl) {
+                        nodeStatusEl.textContent = `${t('executing_status', 'Executing')} ${data.data.node}`;
+                    }
+                }
+                break;
+
+            case 'executed':
+                // ✅ Reconnect to your full business logic
+                if (results && data.data.output && 'images' in data.data.output) {
+                    handleExecutedEvent(data.data, results, guideContainer);
+                }
+                break;
+
+            case 'execution_error':
+            case 'execution_interrupted':
+                updateUIForGenerationState(false);
+                displayModalMessage('generation_interrupted', true);
+                if (nodeStatusEl) {
+                    nodeStatusEl.textContent = t('interrupted_status', 'Interrupted!');
+                }
+                break;
+
+            case 'status':
+                const isProcessing = data.data.status?.exec_info?.queue_remaining > 0;
+                updateUIForGenerationState(isProcessing);
+                if (!IS_GENERATING) {
+                    console.log(t('idle_status', 'System is idle.'));
+                }
+                break;
+
+            default:
+                console.log('Unknown WS message type (image gen):', data.type);
+        }
+    });
+
+    // --- Business Logic: Executed Event ---
+    function handleExecutedEvent(data, results, guideContainer) {
+        if (!results || !data.output?.images || !Array.isArray(data.output.images)) return;
+
+        const images = data.output.images;
+        if (images.length === 0) return;
+
+        // Generate image URLs
+        const imageElements = images.map(image => {
+            const imageUrl = `/view?filename=${encodeURIComponent(image.filename)}&subfolder=${encodeURIComponent(image.subfolder)}&type=${encodeURIComponent(image.type)}`;
+
+            // Save to history immediately
+            saveHistoryItem(imageUrl, window.prompt_input?.value || '');
+
+            return `
+                <div>
+                    <a href="${imageUrl}" target="_blank" rel="noopener">
+                        <img src="${imageUrl}" class="rounded-lg shadow-lg" loading="lazy" alt="Generated image">
+                    </a>
+                </div>
+            `;
+        }).join('');
+
+        // Grid class based on count
+        const gridClass = images.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
+
+        // ✅ Safe: We control the image source (from backend), but still sanitize via encodeURI
+        results.innerHTML = `<div class="grid ${gridClass} gap-4">${imageElements}</div>`;
+
+        // Hide guide, show results
+        if (guideContainer) guideContainer.classList.add('hidden');
+        results.classList.remove('hidden');
     }
     
-    /**
-     * Loads predefined ComfyUI API workflows from JSON files.
-     * @returns {Promise<Object>} An object containing loaded workflow JSONs, keyed by their names.
-     */
     async function load_api_workflows() {
-        let workflowPaths = {
-            'flux_kontext': '/js/flux-kontext.json'
-            // 'flux_kontext': '/paltech/js/flux-kontext.json',
-            // 'flux_kontext-model': '/paltech/js/flux-kontext-model.json'
-
-        }
-        for (let key in workflowPaths) {
+        for (let key in WORKFLOW_PATHS) {
             try {
-                let response = await fetch(workflowPaths[key]);
+                // let response = await fetch(WORKFLOW_PATHS[key]);
+                let response = await window.appUtils.fetchWithTimeout(WORKFLOW_PATHS[key], {}, 8000);
+                console.log('response', response); // return undefined
                 if (!response.ok) {
-                    throw new Error(`Failed to load workflow ${workflowPaths[key]}: ${response.status} ${response.statusText}`);
+                    throw new Error(`Failed to load workflow ${WORKFLOW_PATHS[key]}: ${response.status} ${response.statusText}`);
                 }
                 workflows[key] = await response.json();
                 console.log(`Workflow ${key} loaded successfully:`, workflows[key]);
             } catch (error) {
                 console.error(`Error loading workflow ${key}:`, error);
                 workflows[key] = {};
-                displayModalMessage(`Failed to load workflow: ${key}. Please check the path and server status.`, true, false);
+                window.appUtils.displayModalMessage(`Failed to load workflow: ${key}. Please check the path and server status.`, langConfig);
             }
         }
         return workflows;
@@ -591,8 +789,7 @@
 
     async function loadPoses() {
         try {
-            const response = await fetch('/js/poses.json');
-            // const response = await fetch('/paltech/js/poses.json');
+            const response = await fetch(POSES_JSON_PATH);
             if (!response.ok) {
                 throw new Error(`Failed to load poses.json: ${response.status} ${response.statusText}`);
             }
@@ -600,7 +797,7 @@
             populatePoseModal();
         } catch (error) {
             console.error('Error loading poses data:', error);
-            displayModalMessage('Failed to load pose data. Please check the poses.json file.', true, false);
+            window.appUtils.displayModalMessage('failed_load_poses_json', langConfig);
         }
     }
 
@@ -608,11 +805,11 @@
        if (!posesModalList) return;
        posesModalList.innerHTML = ''; // Clear existing content
 
-       const grid = d.createElement('div');
+       const grid = document.createElement('div');
        grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4';
 
        posesData.forEach((pose, index) => {
-           const card = d.createElement('div');
+           const card = document.createElement('div');
            card.className = 'pose-card flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200';
            card.dataset.index = index;
            const poseName = currentLanguage === 'ar' && pose.name_ar ? pose.name_ar : pose.name;
@@ -659,72 +856,77 @@
     if (generate) {
         generate.addEventListener('click', async () => {
             if (IS_GENERATING) return;
+
+            if (!prompt_input.value.trim()) {
+                window.appUtils.displayNotification('prompt_required', langConfig);
+                updateUIForGenerationState(false);
+                return;
+            }
+            if (!window.imageGenState.uploadedImageFile) {
+                window.appUtils.displayNotification('image_required', langConfig);
+                updateUIForGenerationState(false);
+                return;
+            }
             
             updateUIForGenerationState(true);
 
             if (!workflows || !workflows.flux_kontext) {
-                displayModalMessage('Workflow not loaded. Please ensure the workflow JSON is accessible and try again.', true, false);
+                window.appUtils.displayModalMessage('image_generation_workflow_not_loaded', langConfig);
                 updateUIForGenerationState(false);
                 return;
             }
 
             let wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext));
             
-            if(prompt_input) wf_to_use['308'].inputs.text = prompt_input.value;
+            if(prompt_input) wf_to_use[CLIP_TEXT_ENCODE_NODE].inputs.text = prompt_input.value;
             if(is_random_input && is_random_input.checked && seed_input) seed_input.value = Math.floor(Math.random() * 1e15);
 
-            if(wf_to_use['318']) {
-                wf_to_use['318'].inputs.seed = parseInt(seed_input.value);
+            if(wf_to_use[K_SAMPLER_NODE]) {
+                wf_to_use[K_SAMPLER_NODE].inputs.seed = parseInt(seed_input.value);
             }
-            if(wf_to_use['355']) {
-                wf_to_use['355'].inputs.batch_size = parseInt(batch_size_input.value);
-                wf_to_use['355'].inputs.width = parseInt(img_width_input.value);
-                wf_to_use['355'].inputs.height = parseInt(img_height_input.value);
+            if(wf_to_use[EMPTY_LATENT_IMAGE_NODE]) {
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.batch_size = parseInt(batch_size_input.value);
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = parseInt(img_width_input.value);
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = parseInt(img_height_input.value);
             }
-            if(wf_to_use['316']) {
-               wf_to_use['316'].inputs.guidance = parseFloat(guidance_scale_input.value);
+            if(wf_to_use[KONTEXT_GUIDANCE_NODE]) {
+               wf_to_use[KONTEXT_GUIDANCE_NODE].inputs.guidance = parseFloat(guidance_scale_input.value);
             }
-               
-            if (uploadedImageFile) {
-                const currentFileIdentifier = `${uploadedImageFile.name}-${uploadedImageFile.size}-${uploadedImageFile.lastModified}`;
-                if (currentFileIdentifier !== lastUploadedFileIdentifier) {
-                        try {
-                        const uploadResult = await fetch('/upload/image', {
-                            method: 'POST',
-                            body: (() => {
-                                const fd = new FormData();
-                                fd.append('image', uploadedImageFile);
-                                fd.append('overwrite', 'true');
-                                return fd;
-                            })()
-                        }).then(res => res.json());
-                        lastUploadedComfyUIName = uploadResult.name;
-                        lastUploadedFileIdentifier = currentFileIdentifier;
-                    } catch (e) {
-                        displayModalMessage(`${languages[currentLanguage].image_upload_failed} ${e.message}`, true, false);
-                        updateUIForGenerationState(false);
-                        return;
-                    }
-                }
-                if(wf_to_use['357']) wf_to_use['357'].inputs.image = lastUploadedComfyUIName;
-            } else {
-                if(wf_to_use['357']) wf_to_use['357'].inputs.image = "default_blank.png";
+            const comfyUIImageName = await window.appUtils.uploadImage(
+                window.imageGenState.uploadedImageFile,
+                t('uploading_image'),
+                langConfig
+            );
+            if (!comfyUIImageName) {
+                updateUIForGenerationState(false);
+                return;
             }
+            if (wf_to_use[LOAD_IMAGE_NODE]) wf_to_use[LOAD_IMAGE_NODE].inputs.image = comfyUIImageName;
 
             try {
-                await queue_prompt(wf_to_use);
+                await window.appUtils.queuePrompt(wf_to_use, window.sharedWS.client_id);
             } catch (e) {
-                displayModalMessage(`${e.message}`, true, false);
+                window.appUtils.displayModalMessage(`${e.message}`, langConfig);
                 updateUIForGenerationState(false);
             }
         });
     }
 
-    if (interrupt_button) interrupt_button.addEventListener('click', () => fetch('/interrupt', { method: 'POST' }));
-    if (image_size_radioBtn) image_size_radioBtn.addEventListener('change', e => { if (e.target.name === 'image-size') setImageDimensions(e.target.value); });
-   if (guidance_scale_input) guidance_scale_input.addEventListener('input', e => { if(guidance_scale_value_el) guidance_scale_value_el.textContent = e.target.value; });
+
+    if(interrupt_button) interrupt_button.addEventListener('click', () => fetch('/interrupt', { method: 'POST' }));
+    if(image_size_radioBtn) image_size_radioBtn.addEventListener('change', e => { 
+        if (e.target.name === 'image-size') setImageDimensions(e.target.value); 
+    });
+    let timeout;
+    guidance_scale_input.addEventListener('input', e => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            if(guidance_scale_value_el) guidance_scale_value_el.textContent = e.target.value;
+        }, 50);
+    });
+    // if(guidance_scale_input) guidance_scale_input.addEventListener('input', e => { if(guidance_scale_value_el) guidance_scale_value_el.textContent = e.target.value; });
     if(image_input) image_input.addEventListener('change', function() { handleImagePreview(this.files ? this.files[0] : null); });
-    if(modalCloseButton) modalCloseButton.addEventListener('click', () => displayModalMessage('', false));
+    if(modalCloseButton) modalCloseButton.addEventListener('click', () => window.appUtils.displayModalMessage('', langConfig, false));
     if(clearHistoryButton) clearHistoryButton.addEventListener('click', clearHistory);
     
     // Turkish WOW event listeners
@@ -758,14 +960,192 @@
        });
    }
 
-   if (posesModalCloseButton) {
-       posesModalCloseButton.addEventListener('click', () => {
-           if (posesModal) {
-               posesModal.classList.add('hidden');
-               document.body.classList.remove('modal-open');
-           }
-       });
-   }
+      // --- Tab Navigation ---
+    function switchView(viewId) {
+        if (viewId === activeView) return;
+
+        const currentActiveView = activeView === 'image-generation' ? imageGenerationView : promptGenerationView;
+        const targetViewElement = viewId === 'image-generation' ? imageGenerationView : promptGenerationView;
+
+        if (currentActiveView && targetViewElement) {
+            // Start fade out
+            currentActiveView.style.opacity = '0';
+            setTimeout(() => {
+                // After fade out, hide current and show target
+                currentActiveView.classList.add('hidden');
+                targetViewElement.classList.remove('hidden');
+                // Trigger reflow
+                void targetViewElement.offsetWidth;
+                // Start fade in
+                targetViewElement.style.opacity = '1';
+
+                activeView = viewId;
+
+                // --- Update tab state (for new <a> tag tabs with background/text active style) ---
+                tabButtons.forEach(link => {
+                    const tabViewId = link.dataset.tab;
+                    const isSelected = tabViewId === viewId;                    
+                    // Update visual state using classes similar to Tailwind example logic
+                    // Toggle active/inactive state with Tailwind classes
+                    link.classList.toggle('bg-gray-100', isSelected);
+                    link.classList.toggle('text-blue-600', isSelected);
+                    link.classList.toggle('dark:bg-gray-800', isSelected);
+                    link.classList.toggle('dark:text-blue-500', isSelected);
+
+                    link.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+                });
+                // --- End Update tab state ---
+
+                // Load prompt generator if needed
+                if (viewId === 'prompt-generation' && !promptGeneratorLoaded) {
+                    loadPromptGeneratorContent();
+                } 
+                // else if (viewId === 'prompt-generation' && promptGeneratorLoaded) {
+                //     // Sync language for already loaded Prompt Generator view
+                //     // const currentLang = languageSelect ? languageSelect.value : currentLanguage;
+                //     // if (targetViewElement) {
+                //     //      updateLanguageInContext(targetViewElement, currentLang, languages[currentLang]);
+                //     //      console.log("Prompt Generator view language synced to:", currentLang);
+                //     // }
+                // }
+            }, 300); // Match CSS transition duration
+        } else {
+            // Fallback
+            // viewContents.forEach(view => view.classList.add('hidden'));
+            // if (targetViewElement) {
+            //     targetViewElement.classList.remove('hidden');
+            //     activeView = viewId;
+            //     if (viewId === 'prompt-generation' && !promptGeneratorLoaded) {
+            //         loadPromptGeneratorContent();
+            //     }
+            // }
+            tabButtons.forEach(button => {
+                if (button.dataset.tab === viewId) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+    }
+
+    function setupTabNavigation() {
+        tabButtons.forEach(link => {
+            let isSelected = link.getAttribute('aria-selected') === 'true';
+
+            link.classList.toggle('bg-gray-100', isSelected);
+            link.classList.toggle('text-blue-600', isSelected);
+            link.classList.toggle('dark:bg-gray-800', isSelected);
+            link.classList.toggle('dark:text-blue-500', isSelected);
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default '#' navigation
+                const targetView = link.dataset.tab;
+                switchView(targetView);
+            });
+        });
+    }
+
+    // --- Prompt Generation Tab Logic ---
+    async function loadPromptGeneratorContent() {
+        if (promptGeneratorLoaded || !promptGenerationView) return;
+
+        try {
+            if (promptGeneratorLoadingIndicator) {
+                promptGeneratorLoadingIndicator.parentElement.classList.remove('hidden');
+            }
+
+            const [htmlResponse, jsResponse] = await Promise.all([
+                fetch('prompt-generator.html'),
+                // Load JS via script tag injection as before, or use dynamic import if ES module
+                new Promise((resolve, reject) => {
+                    if (typeof window.initializePromptGeneratorTab === 'function') {
+                        console.log("Prompt Generator JS: Function already available.");
+                        resolve(); // Already loaded
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = PROMPT_GENERATOR_JS_PATH; // Ensure path is correct
+                    script.onload = () => {
+                        console.log("Prompt Generator JS: Script loaded successfully.");
+                        resolve();
+                    };
+                    script.onerror = (e) => {
+                        console.error("Prompt Generator JS: Failed to load script:", e);
+                        reject(new Error(`Failed to load ${PROMPT_GENERATOR_JS_PATH}`));
+                    };
+                    document.head.appendChild(script);
+                })
+            ]);
+
+            if (!htmlResponse.ok) throw new Error(`Failed to load prompt-generator.html: ${htmlResponse.status}`);
+            const htmlText = await htmlResponse.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const mainGridDiv = doc.getElementById('prompt-generator-main-content');
+
+            if (mainGridDiv) {
+                if (promptGeneratorLoadingIndicator) {
+                    promptGeneratorLoadingIndicator.parentElement.classList.add('hidden');
+                }
+
+                promptGenerationView.innerHTML = '';
+                promptGenerationView.appendChild(mainGridDiv);
+
+                promptGeneratorLoaded = true;
+                console.log("Prompt Generator content loaded and injected.");
+
+                if (typeof window.initializePromptGeneratorTab === 'function') {
+                    console.log("Prompt Generator: Calling initialization function...");
+                    try {
+                        await window.initializePromptGeneratorTab();
+                        console.log("Prompt Generator: Initialization function completed.");
+
+                        const currentLang = languageSelect ? languageSelect.value : currentLanguage;
+                        updateLanguageInContext(promptGenerationView, currentLang, languages[currentLang]);
+                        console.log("Prompt Generator view language synced to:", currentLang);
+                        // Language sync for first load happens via custom event listener now
+                    } catch (initError) {
+                        console.error("Prompt Generator: Error calling initialization function:", initError);
+                        promptGenerationView.innerHTML = `
+                            <div class="p-4 sm:p-6">
+                                <div class="text-center py-10 text-red-500 dark:text-red-400">
+                                    <p class="text-lg" data-lang-key="prompt_generator_init_error">Failed to initialize Prompt Generator. Runtime error occurred.</p>
+                                    <p class="text-sm mt-2">Details: ${initError.message}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    const errorMsg = "Prompt Generator: Global initialization function 'window.initializePromptGeneratorTab' not found after script execution.";
+                    console.error(errorMsg);
+                    promptGenerationView.innerHTML = `
+                        <div class="p-4 sm:p-6">
+                            <div class="text-center py-10 text-red-500 dark:text-red-400">
+                                <p class="text-lg" data-lang-key="prompt_generator_init_error">${errorMsg}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                throw new Error("Could not find main content grid in prompt-generator.html");
+            }
+
+        } catch (error) {
+            console.error("Error loading prompt generator content:", error);
+            if (promptGeneratorLoadingIndicator) {
+                promptGeneratorLoadingIndicator.parentElement.classList.add('hidden');
+            }
+            promptGenerationView.innerHTML = `
+                <div class="p-4 sm:p-6">
+                    <div class="text-center py-10 text-red-500 dark:text-red-400">
+                        <p class="text-lg" data-lang-key="prompt_generator_load_error">Failed to load Prompt Generator. Please try again later.</p>
+                        <p class="text-sm mt-2">${error.message}</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
 
     // Initial Load
     document.addEventListener('DOMContentLoaded', async () => {
@@ -774,6 +1154,7 @@
         await loadPoses();
         setImageDimensions(_('input[name="image-size"]:checked')?.value || 'square');
         updateUIForGenerationState(false);
+        setupTabNavigation(); // Setup tab navigation
     });
 
 })(window, document);

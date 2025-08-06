@@ -1,0 +1,89 @@
+{
+  "1": {
+    "inputs": {
+      "image": "default_blank.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "2": {
+    "inputs": {
+      "question": "Describe this image in detail.",
+      "seed": 699973599463304,
+      "temperature": 0.1,
+      "top_p": 1,
+      "max_new_tokens": 512,
+      "model": [
+        "3",
+        0
+      ],
+      "processor": [
+        "3",
+        1
+      ],
+      "image": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "JanusImageUnderstanding",
+    "_meta": {
+      "title": "Janus Image Understanding"
+    }
+  },
+  "3": {
+    "inputs": {
+      "model_name": "deepseek-ai/Janus-Pro-1B"
+    },
+    "class_type": "JanusModelLoader",
+    "_meta": {
+      "title": "Janus Model Loader"
+    }
+  },
+  "4": {
+    "inputs": {
+      "image1_description": [
+        "2",
+        0
+      ],
+      "image2_description": "",
+      "edit_instruction": "",
+      "preset": "Beauty Product Use -> Flux Prompt",
+      "seed": 55119683492071,
+      "llm_service_connector": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "LocalKontextPromptGenerator",
+    "_meta": {
+      "title": "Local Kontext Prompt Generator 🐑"
+    }
+  },
+  "5": {
+    "inputs": {
+      "local_gguf_model_name": "Hermes-2-Pro-Llama-3-8B-Q8_0",
+      "device": "GPU",
+      "n_gpu_layers": -1
+    },
+    "class_type": "SetLocalGGUFLLMServiceConnector",
+    "_meta": {
+      "title": "Set Local GGUF LLM Service Connector 🐑"
+    }
+  },
+  "6": {
+    "inputs": {
+      "preview": "An Arab man with a sleek modern hairstyle and subtle stubble, wearing a white button-up shirt and dark suit, stands in front of a minimalist high-end salon backdrop. He holds an amber glass bottle with a black dropper cap and a white label with black text, featuring the NEUTREVO FUE SALOON emblem and the product name \"BIOTIN Hair Serum\" in bold letters. He carefully squeezes the dropper to release the serum onto his palm, then gently massages it into his scalp, creating a cinematic depth of field with soft light and luxury textures. The salon environment is adorned with minimalist props, a large mirror, and a subtle floral arrangement, evoking a sense of sophistication and elegance.",
+      "source": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Preview Any"
+    }
+  }
+}
