@@ -747,7 +747,8 @@
             const imageUrl = `/view?filename=${encodeURIComponent(image.filename)}&subfolder=${encodeURIComponent(image.subfolder)}&type=${encodeURIComponent(image.type)}`;
 
             // Save to history immediately
-            saveHistoryItem(imageUrl, window.prompt_input?.value || '');
+            console.log("window.prompt_input?.value", prompt_input);
+            saveHistoryItem(imageUrl, prompt_input?.value || '');
 
             return `
                 <div>
@@ -879,6 +880,11 @@
             }
 
             let wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext));
+
+            if(enableTurkishWowCheckbox.checked) {
+                wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext_model));
+            }
+            
             
             if(prompt_input) wf_to_use[CLIP_TEXT_ENCODE_NODE].inputs.text = prompt_input.value;
             if(is_random_input && is_random_input.checked && seed_input) seed_input.value = Math.floor(Math.random() * 1e15);
