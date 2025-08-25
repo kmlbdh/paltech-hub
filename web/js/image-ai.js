@@ -180,6 +180,19 @@
             uploading_image: "Uploading image...",
             prompt_required: "Please enter a prompt.",
             image_required: "Please upload an image.",
+
+            ws_connected_message: "WebSocket connected",
+
+            clothes_upload_title: "Clothes",
+            select_clothes_button: "choose clothes' image",
+            clothes_image_preview_placeholder: "Clothes Image Preview",
+            clothes_image_upload_title: "Upload Clothes Image",
+
+            model_upload_title: "Model",
+            select_model_button: "choose model's image",
+            model_image_preview_placeholder: "Model Image Preview",
+            model_image_upload_title: "Upload Model Image",
+
         },
         ar: {
             generation_params_title: "معلمات التوليد",
@@ -280,6 +293,18 @@
             uploading_image: "جاري تحميل الصورة...",
             prompt_required: "الرجاء إدخال مطالبة.",
             image_required: "الرجاء تحميل صورة.",
+
+            ws_connected_message: "تم الاتصال بالخادم",
+
+            clothes_upload_title: "ملابس",
+            select_clothes_button: "اختر صورة للملابس",
+            clothes_image_preview_placeholder: "معاينة الصورة الملابس",
+            clothes_image_upload_title: "تحميل صورة الملابس",
+
+            model_upload_title: "المودل",
+            select_model_button: "اختر صورة للمودل",
+            model_image_preview_placeholder: "معاينة الصورة المودل",
+            model_image_upload_title: "تحميل صورة المودل",
         }
     };
 
@@ -441,36 +466,6 @@
         const backButton = _('#back-button');
         window.appUtils.themeSwitcher(themeToggle, themeIcon);
 
-        // Theme Toggle Logic
-        // const currentTheme = localStorage.getItem('theme');
-        // if (currentTheme) {
-        //     document.documentElement.setAttribute('data-theme', currentTheme);
-        //     if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '💡';
-        // } else {
-        //     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        //         document.documentElement.setAttribute('data-theme', 'dark');
-        //         if (themeIcon) themeIcon.textContent = '🌙';
-        //     } else {
-        //         document.documentElement.setAttribute('data-theme', 'white');
-        //         if (themeIcon) themeIcon.textContent = '💡';
-        //     }
-        // }
-
-        // if (themeToggle) {
-        //     themeToggle.addEventListener('click', () => {
-        //         let theme = document.documentElement.getAttribute('data-theme');
-        //         if (theme === 'white') {
-        //             document.documentElement.setAttribute('data-theme', 'dark');
-        //             localStorage.setItem('theme', 'dark');
-        //             if (themeIcon) themeIcon.textContent = '🌙';
-        //         } else {
-        //             document.documentElement.setAttribute('data-theme', 'white');
-        //             localStorage.setItem('theme', 'white');
-        //             if (themeIcon) themeIcon.textContent = '💡';
-        //         }
-        //     });
-        // }
-
         // Language Switcher Logic
         if (languageSelect) {
             languageSelect.addEventListener('change', (event) => {
@@ -491,7 +486,6 @@
         // Initial UI setup
         window.appUtils.setLanguage(langConfig.currentLanguage, langConfig,()=>{}); // Set language on initial load
         renderHistory(); // Render history on initial load
-        // setupWebSocket(); // Keep WebSocket connected on page load for status updates
         // Ensure guide is visible on initial load
         if (guideContainer) guideContainer.classList.remove('hidden');
         if (results) results.classList.add('hidden');

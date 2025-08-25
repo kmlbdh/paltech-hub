@@ -1,5 +1,16 @@
-@import "tailwindcss";
-/* Base styles for body */
+@import 'tailwindcss';
+
+/*
+  The new v4 syntax uses a comment-like directive for content.
+  The `content` key is followed by a colon and the array of paths.
+*/
+
+@theme {
+  --font-inter: Inter, sans-serif;
+  --font-cairo: Cairo, sans-serif;
+}
+
+ /* Base styles for body */
 html[data-theme='white'] body {
     background-color: #ffffff; /* bg-white */
     color: #1f2937; /* text-gray-800 */
@@ -132,18 +143,28 @@ html[data-theme='dark'] .icon-shape {
     border-radius: 2px;
 }
 
-#display-uploaded-image {
+#display-prompt-uploaded-image {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     min-height: 150px;
 }
-/* Specific styles for display-uploaded-image */
-html[data-theme='white'] #display-uploaded-image {
+
+html[data-theme='white'] #display-prompt-uploaded-image{
     background-color: #f9fafb; /* bg-gray-50 */
     border-color: #d1d5db; /* border-gray-300 */
 }
-html[data-theme='dark'] #display-uploaded-image {
+html[data-theme='dark'] #display-prompt-uploaded-image{
+    background-color: #1f2937; /* bg-gray-800/50 */
+    border-color: #374151; /* border-gray-700 */
+}
+
+/* Specific styles for display-uploaded-image */
+html[data-theme='white'] #display-uploaded-image{
+    background-color: #f9fafb; /* bg-gray-50 */
+    border-color: #d1d5db; /* border-gray-300 */
+}
+html[data-theme='dark'] #display-uploaded-image{
     background-color: #1f2937; /* bg-gray-800/50 */
     border-color: #374151; /* border-gray-700 */
 }
@@ -552,3 +573,84 @@ html[data-theme='dark'] .tooltip-text::after {
     visibility: visible;
     opacity: 1;
 }
+
+    .view-content {
+    /* Ensure views take full width and can scroll if needed */
+    width: 100%;
+}
+/* --- ADD: Fade Animation for Views --- */
+.view-content {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+.view-content.hidden {
+    opacity: 0;
+    /* Keep display: none to truly hide, or use visibility: hidden if you want to maintain space */
+    /* display: none; */ /* Uncomment if you prefer display none */
+}
+/* --- END: Fade Animation --- */
+
+/* Style the tab button when it's active */
+/* Light mode active tab */
+html[data-theme='white'] .tab-button-link.bg-gray-100 { /* Target the link with the active bg class */
+    background-color: #f3f4f6; /* bg-gray-100 - Light gray background */
+    color: #2563eb; /* text-blue-600 - Blue text */
+}
+
+/* Dark mode active tab link */
+html[data-theme='dark'] .tab-button-link.dark\:bg-gray-800.dark\:text-blue-500 { /* Target the link with the active dark bg and text classes */
+    background-color: #1f2937; /* dark:bg-gray-800 - Dark background */
+    color: #3b82f6; /* dark:text-blue-500 - Light blue text */
+}
+/* --- END: Styles for active tab --- */
+
+
+html[data-theme='white'] #prompt-history-section {
+    background-color: #f3f4f6; /* bg-gray-100 */
+}
+html[data-theme='dark'] #prompt-history-section {
+    background-color: #374151; /* bg-gray-700 */
+}
+
+html[data-theme='white'] .prompt-history-item {
+    background-color: #ffffff; /* bg-white */
+}
+html[data-theme='dark'] .prompt-history-item {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+
+/* Ensure text colors are correct */
+html[data-theme='white'] .prompt-history-item-prompt {
+    color: #4b5563; /* text-gray-600 */
+}
+html[data-theme='dark'] .prompt-history-item-prompt {
+    color: #d1d5db; /* text-gray-300 - or #9ca3af if that's preferred */
+}
+
+/* Ensure placeholder text is correct */
+html[data-theme='white'] #prompt-result-placeholder,
+html[data-theme='white'] #prompt-history-empty-message {
+    color: #9ca3af; /* text-gray-400 */
+}
+html[data-theme='dark'] #prompt-result-placeholder,
+html[data-theme='dark'] #prompt-history-empty-message {
+    color: #9ca3af; /* text-gray-400 */
+}
+html[data-theme='white'] #prompt-result-container {
+    background-color: #f9fafb; /* bg-gray-50 - Very light gray */
+}
+html[data-theme='dark'] #prompt-result-container {
+    background-color: #374151; /* bg-gray-700 - Dark gray */
+}
+html[data-theme='white'] .sticky.bottom-4.bg-white.dark\:bg-gray-800 {
+    background-color: #ffffff; /* bg-white */
+}
+html[data-theme='dark'] .sticky.bottom-4.bg-white.dark\:bg-gray-800 {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+#display-uploaded-image {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 150px;
+} 

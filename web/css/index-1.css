@@ -1,4 +1,14 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/*
+  The new v4 syntax uses a comment-like directive for content.
+  The `content` key is followed by a colon and the array of paths.
+*/
+
+@theme {
+  --font-inter: Inter, sans-serif;
+  --font-cairo: Cairo, sans-serif;
+}
 
 /* Base styles for body */
 html[data-theme='white'] body {

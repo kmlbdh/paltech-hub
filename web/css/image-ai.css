@@ -1755,6 +1755,20 @@ html[data-theme='dark'] label[for="image-input"] {
 html[data-theme='dark'] label[for="image-input"]:hover {
   background-color: #6b7280;
 }
+html[data-theme='white'] label[for$="-image-input"] {
+  background-color: #d1d5db;
+  color: #1f2937;
+}
+html[data-theme='white'] label[for="*-image-input"]:hover {
+  background-color: #9ca3af;
+}
+html[data-theme='dark'] label[for$="-image-input"] {
+  background-color: #4b5563;
+  color: #e5e7eb;
+}
+html[data-theme='dark'] label[for$="-image-input"]:hover {
+  background-color: #6b7280;
+}
 #is-random {
   -webkit-appearance: checkbox;
   appearance: checkbox;
