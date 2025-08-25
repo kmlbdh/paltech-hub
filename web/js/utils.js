@@ -72,6 +72,7 @@
         }
 
         let messageText = messageKey;
+        console.log('langConfig.languages[langConfig.currentLanguage]?.[messageKey] ', langConfig.languages[langConfig.currentLanguage]?.[messageKey]);
         if (isLangKey && langConfig && langConfig.languages && langConfig.currentLanguage) {
             messageText = langConfig.languages[langConfig.currentLanguage]?.[messageKey] || messageKey;
         }
@@ -99,6 +100,7 @@
         }
 
         let messageText = messageKey;
+        console.log('langConfig.languages[langConfig.currentLanguage]?.[messageKey] ', langConfig.languages[langConfig.currentLanguage]?.[messageKey]);
         if (isLangKey && langConfig && langConfig.languages && langConfig.currentLanguage) {
             messageText = langConfig.languages[langConfig.currentLanguage]?.[messageKey] || messageKey;
         }
