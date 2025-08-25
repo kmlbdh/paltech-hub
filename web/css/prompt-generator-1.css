@@ -1,0 +1,159 @@
+@import 'tailwindcss';
+
+/*
+  The new v4 syntax uses a comment-like directive for content.
+  The `content` key is followed by a colon and the array of paths.
+*/
+
+@theme {
+  --font-inter: Inter, sans-serif;
+  --font-cairo: Cairo, sans-serif;
+}
+
+/* Prompt History Section Background */
+html[data-theme='white'] #prompt-history-section {
+    background-color: #f3f4f6; /* bg-gray-100 */
+}
+html[data-theme='dark'] #prompt-history-section {
+    background-color: #374151; /* bg-gray-700 */
+}
+
+/* Prompt History Item Background */
+html[data-theme='white'] .prompt-history-item {
+    background-color: #ffffff; /* bg-white */
+}
+html[data-theme='dark'] .prompt-history-item {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+
+/* Prompt History Item Text Color */
+html[data-theme='white'] .prompt-history-item-prompt {
+    color: #4b5563; /* text-gray-600 */
+}
+html[data-theme='dark'] .prompt-history-item-prompt {
+    color: #d1d5db; /* text-gray-300 - or #9ca3af if that's preferred */
+}
+
+/* Placeholder Text Color */
+html[data-theme='white'] #prompt-result-placeholder,
+html[data-theme='white'] #prompt-history-empty-message {
+    color: #9ca3af; /* text-gray-400 */
+}
+html[data-theme='dark'] #prompt-result-placeholder,
+html[data-theme='dark'] #prompt-history-empty-message {
+    color: #9ca3af; /* text-gray-400 */
+}
+
+/* Prompt Result Container Background */
+html[data-theme='white'] #prompt-result-container {
+    background-color: #f9fafb; /* bg-gray-50 - Very light gray */
+}
+html[data-theme='dark'] #prompt-result-container {
+    background-color: #374151; /* bg-gray-700 - Dark gray */
+}
+
+/* Sticky Bottom Bar Background */
+html[data-theme='white'] .sticky.bottom-4.bg-white.dark\:bg-gray-800 {
+    background-color: #ffffff; /* bg-white */
+}
+html[data-theme='dark'] .sticky.bottom-4.bg-white.dark\:bg-gray-800 {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+
+/* Basic disabled state */
+textarea:disabled, input:disabled, button:disabled, select:disabled {
+    @apply bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-75;
+}
+
+/* Notification bar styles */
+#notification-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #10b981; /* bg-emerald-500 */
+    color: white;
+    text-align: center;
+    padding: 0.75rem;
+    z-index: 1000;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+#notification-bar.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Modal styles */
+#app-modal {
+    position: fixed;
+    z-index: 1050;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+#app-modal-content {
+    background-color: #fefefe; /* bg-white */
+    color: #333; /* Ensure text is visible */
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 0.5rem; /* rounded-lg */
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+#modal-close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+#modal-close-button:hover,
+#modal-close-button:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+/* Utility classes */
+.hidden { display: none !important; }
+body.modal-open { overflow: hidden; }
+
+/* Force LTR for specific inputs */
+#edit-instruction-input, #generated-prompt-output, #prompt-result-textarea {
+    direction: ltr;
+}
+
+/* Ensure main areas can scroll */
+main, #prompt-result-container {
+    overflow: visible;
+}
+
+/* Image upload preview */
+#display-uploaded-image {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 150px;
+}
+
+/* Specific styles for display-uploaded-image */
+html[data-theme='white'] #display-prompt-uploaded-image {
+    background-color: #f9fafb; /* bg-gray-50 */
+    border-color: #d1d5db; /* border-gray-300 */
+}
+html[data-theme='dark'] #display-prompt-uploaded-image {
+    background-color: #1f2937; /* bg-gray-800/50 */
+    border-color: #374151; /* border-gray-700 */
+}

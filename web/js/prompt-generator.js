@@ -657,11 +657,11 @@
                                     updateUIForGenerationState(false);
                                     window.appUtils.displayNotification('generation_completed', langConfig);
                                     if (node_status_el) {
-                                        node_status_el.textContent = t('finished_status', 'Finished!');
+                                        node_status_el.textContent = languages[currentLanguage]['finished_status'];
                                     }
                                 } else {
                                     if (node_status_el) {
-                                        node_status_el.textContent = `${t('executing_status', 'Executing')} ${data.data.node}`;
+                                        node_status_el.textContent = `${languages[currentLanguage]['executing_status']} ${data.data.node}`;
                                     }
                                 }
                                 break;
