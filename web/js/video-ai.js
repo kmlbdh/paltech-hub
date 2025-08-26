@@ -125,6 +125,7 @@
             copied_to_clipboard: "Copied to clipboard!",
             uploading_image: "uploading the image",
             upload_image_failed: "Image upload failed.",
+            ws_connected_message: "WebSocket connected",
             // ... (Ensure all keys used in this script are present)
         },
         ar: {
@@ -189,6 +190,7 @@
             reconnect_failed: "تعذّر الاتصال بالخادم. يُرجى تحديث الصفحة.",
             copied_to_clipboard: "تم النسخ إلى الحافظة!",
             upload_image_failed: "فشل رفع الصورة",
+            ws_connected_message: "تم الاتصال بالخادم",
             // ... (Ensure all keys used in this script are present)
 
         }
@@ -577,7 +579,7 @@
                     // Extract the video file path
                     // const videoOutput = data.data.output.images[0];
                     const videoOutput = data.data.output.video[0];
-                    
+
                     if (videoOutput.filename) {
                         // Construct the URL to view/download the video
                         // Assuming it's saved in the 'output' directory and accessible via /view
