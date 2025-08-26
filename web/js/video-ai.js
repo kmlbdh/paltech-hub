@@ -535,22 +535,14 @@
             }
             if(wf_wan_i2v[WAN_IMAGE_TO_VIDEO_NODE]) {
                 wf_wan_i2v[WAN_IMAGE_TO_VIDEO_NODE].inputs.length = parseInt(videoLengthFramesInput.value);
+                wf_wan_i2v[WAN_IMAGE_TO_VIDEO_NODE].inputs.width = window.videoGenState.selectedWidth || VIDEO_DIMENSION_PRESETS.square
+                wf_wan_i2v[WAN_IMAGE_TO_VIDEO_NODE].inputs.height = window.videoGenState.selectedHeight || VIDEO_DIMENSION_PRESETS.square; // Fallback
                 // Width/Height? Assuming defaults or handled by node. If needed, set here.
             }
             if (wf_wan_i2v[WAN_LOAD_IMAGE_NODE]) {
                  wf_wan_i2v[WAN_LOAD_IMAGE_NODE].inputs.image = comfyUIImageName;
             }
             
-            // --- ADD THIS BLOCK ---
-            // Set the width and height in the EmptySD3LatentImage node (Node 355)
-            if (wf_wan_i2v[WAN_EMPTY_LATENT_NODE]) {
-                wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.width = window.videoGenState.selectedWidth || VIDEO_DIMENSION_PRESETS.square; // Fallback
-                wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.height = window.videoGenState.selectedHeight || VIDEO_DIMENSION_PRESETS.square; // Fallback
-                console.log(`Set video dimensions to ${wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.width}x${wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.height}`);
-            } else {
-                console.warn(`Node ${WAN_EMPTY_LATENT_NODE} not found in wan_i2v workflow. Dimensions not set.`);
-            }
-            // --- END ADD BLOCK ---
             // Model Sampling Shift? Assuming default or handled. If needed, adjust nodes 54 & 55.
 
             console.log("Queueing Wan I2V workflow...");
