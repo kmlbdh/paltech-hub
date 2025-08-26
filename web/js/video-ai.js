@@ -571,10 +571,13 @@
                 }
                 // Check if this execution corresponds to the final save node of the *upscale* workflow
                 // Node 9 is 'KMLBDH_VideoCombine' in refine_upscale_video.json. It saves the final video.
-                if (data.data.node === '9' && IS_GENERATING && data.data.output?.images?.length > 0) {
+                // if (data.data.node === '9' && IS_GENERATING && data.data.output?.images?.length > 0) {
+                if (data.data.node === '9' && IS_GENERATING && data.data.output?.video?.length > 0) { 
                     console.log("Final video saved by 'KMLBDH_VideoCombine' (Node 9).");
                     // Extract the video file path
-                    const videoOutput = data.data.output.images[0]; // Assuming one video output
+                    // const videoOutput = data.data.output.images[0];
+                    const videoOutput = data.data.output.video[0];
+                    
                     if (videoOutput.filename) {
                         // Construct the URL to view/download the video
                         // Assuming it's saved in the 'output' directory and accessible via /view
