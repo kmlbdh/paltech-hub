@@ -1,3 +1,22 @@
 /.DS_Store
+.DS_Store
 /node_modules
 /visualstudiocode,node.txt
+
+# macOS specific files
+.DS_Store
+.localized
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# VS Code specific files
+.vscode/
+
+lst-image-ai.html
+lst-image-ai.js
+image-ai-2imgs.html
+image-ai-2imgs.js
+prompt-generator2.js
+
