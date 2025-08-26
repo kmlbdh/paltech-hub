@@ -1,127 +1,622 @@
 {
-  "2": {
-    "inputs": {
-      "model_name": "4x_foolhardy_Remacri.pt"
-    },
-    "class_type": "UpscaleModelLoader",
-    "_meta": {
-      "title": "Load Upscale Model"
-    }
-  },
-  "4": {
-    "inputs": {
-      "upscale_model": [
-        "2",
-        0
+  "id": "00000000-0000-0000-0000-000000000000",
+  "revision": 0,
+  "last_node_id": 31,
+  "last_link_id": 33,
+  "nodes": [
+    {
+      "id": 28,
+      "type": "easy showAnything",
+      "pos": [
+        2973.201904296875,
+        30.61453628540039
       ],
-      "image": [
-        "12",
-        0
-      ]
-    },
-    "class_type": "ImageUpscaleWithModel",
-    "_meta": {
-      "title": "Upscale Image (using Model)"
-    }
-  },
-  "7": {
-    "inputs": {
-      "ckpt_name": "rife49.pth",
-      "clear_cache_after_n_frames": 10,
-      "multiplier": 2,
-      "fast_mode": true,
-      "ensemble": true,
-      "scale_factor": 1,
-      "frames": [
-        "4",
-        0
-      ]
-    },
-    "class_type": "RIFE VFI",
-    "_meta": {
-      "title": "RIFE VFI (recommend rife47 and rife49)"
-    }
-  },
-  "9": {
-    "inputs": {
-      "frame_rate": 32,
-      "codec": "h264",
-      "crf": 15,
-      "preset": "fast",
-      "pix_fmt": "yuv420p",
-      "chunk_size": 8,
-      "save_images_in_memory": false,
-      "tile_size": 0,
-      "tile_overlap": 8,
-      "filename_prefix": "Wan 2.2 I2V 14B Q6 X4 - 32FPS",
-      "images": [
-        "7",
-        0
-      ]
-    },
-    "class_type": "KMLBDH_VideoCombine",
-    "_meta": {
-      "title": "📹 kmlbdh Video Combine (Smart + Tiled)"
-    }
-  },
-  "10": {
-    "inputs": {
-      "anything": [
-        "17",
-        0
-      ]
-    },
-    "class_type": "easy cleanGpuUsed",
-    "_meta": {
-      "title": "Clean VRAM Used"
-    }
-  },
-  "11": {
-    "inputs": {
-      "anything": [
-        "17",
-        0
-      ]
-    },
-    "class_type": "easy clearCacheAll",
-    "_meta": {
-      "title": "Clear Cache All"
-    }
-  },
-  "12": {
-    "inputs": {
-      "message": "🧹 kmlbdh RAM Cleaner: Cache cleared",
-      "images": [
-        "17",
-        0
-      ]
-    },
-    "class_type": "KMLBDH_RAMCleaner",
-    "_meta": {
-      "title": "🧹 kmlbdh RAM Cleaner"
-    }
-  },
-  "17": {
-    "inputs": {
-      "path": [
-        "19",
-        0
+      "size": [
+        210,
+        88
       ],
-      "current_frame": -1,
-      "range": ""
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 30
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.2",
+        "Node name for S&R": "easy showAnything"
+      },
+      "widgets_values": [
+        "True"
+      ]
     },
-    "class_type": "Load Image Sequence (mtb)",
-    "_meta": {
-      "title": "Load Image Sequence (mtb)"
+    {
+      "id": 31,
+      "type": "easy showAnything",
+      "pos": [
+        3012.080810546875,
+        200.98019409179688
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "shape": 7,
+          "type": "*",
+          "link": 33
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.2",
+        "Node name for S&R": "easy showAnything"
+      },
+      "widgets_values": [
+        "True"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "DeleteFolderAny",
+      "pos": [
+        2632.2109375,
+        116.81222534179688
+      ],
+      "size": [
+        270,
+        126
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "any_input",
+          "shape": 7,
+          "type": "*",
+          "link": 32
+        }
+      ],
+      "outputs": [
+        {
+          "name": "success",
+          "type": "BOOLEAN",
+          "links": [
+            30
+          ]
+        },
+        {
+          "name": "message",
+          "type": "STRING",
+          "links": [
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "kmlbdh/ComfyUI-kmlbdh-VideoCombine",
+        "ver": "306db09cdc247b8a2f27b9c8886402c9c13d3dbc",
+        "Node name for S&R": "DeleteFolderAny"
+      },
+      "widgets_values": [
+        "videos",
+        "output",
+        "clear_directory"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "KMLBDH_VideoCombine",
+      "pos": [
+        2090.70068359375,
+        121.54794311523438
+      ],
+      "size": [
+        362.6128845214844,
+        294
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 12
+        },
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VHS_FILENAMES",
+          "type": "VHS_FILENAMES",
+          "links": [
+            32
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "kmlbdh/ComfyUI-kmlbdh-VideoCombine",
+        "ver": "306db09cdc247b8a2f27b9c8886402c9c13d3dbc",
+        "Node name for S&R": "KMLBDH_VideoCombine"
+      },
+      "widgets_values": [
+        32,
+        "h264",
+        15,
+        "fast",
+        "yuv420p",
+        8,
+        false,
+        0,
+        8,
+        "Wan 2.2 I2V 14B Q6 X4 - 32FPS"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "RIFE VFI",
+      "pos": [
+        1539.322509765625,
+        130
+      ],
+      "size": [
+        349.6578063964844,
+        198
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "frames",
+          "type": "IMAGE",
+          "link": 11
+        },
+        {
+          "name": "optional_interpolation_states",
+          "shape": 7,
+          "type": "INTERPOLATION_STATES",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-frame-interpolation",
+        "ver": "1.0.7",
+        "Node name for S&R": "RIFE VFI"
+      },
+      "widgets_values": [
+        "rife49.pth",
+        10,
+        2,
+        true,
+        true,
+        1
+      ]
+    },
+    {
+      "id": 4,
+      "type": "ImageUpscaleWithModel",
+      "pos": [
+        1217.3404541015625,
+        130
+      ],
+      "size": [
+        221.98202514648438,
+        46
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "upscale_model",
+          "type": "UPSCALE_MODEL",
+          "link": 9
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.52",
+        "Node name for S&R": "ImageUpscaleWithModel"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 10,
+      "type": "easy cleanGpuUsed",
+      "pos": [
+        937.236328125,
+        -25.427940368652344
+      ],
+      "size": [
+        157.38925170898438,
+        26
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "type": "*",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.2",
+        "Node name for S&R": "easy cleanGpuUsed"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "easy clearCacheAll",
+      "pos": [
+        847.3404541015625,
+        286
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "anything",
+          "type": "*",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.2",
+        "Node name for S&R": "easy clearCacheAll"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "KMLBDH_RAMCleaner",
+      "pos": [
+        847.3404541015625,
+        442
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "kmlbdh/ComfyUI-kmlbdh-VideoCombine",
+        "ver": "306db09cdc247b8a2f27b9c8886402c9c13d3dbc",
+        "Node name for S&R": "KMLBDH_RAMCleaner"
+      },
+      "widgets_values": [
+        "🧹 kmlbdh RAM Cleaner: Cache cleared"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "Load Image Sequence (mtb)",
+      "pos": [
+        470,
+        130
+      ],
+      "size": [
+        277.3404235839844,
+        166
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "path",
+          "type": "STRING",
+          "widget": {
+            "name": "path"
+          },
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            13,
+            14,
+            15
+          ]
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "links": null
+        },
+        {
+          "name": "current_frame",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "total_frames",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-mtb",
+        "ver": "0.5.4",
+        "Node name for S&R": "Load Image Sequence (mtb)"
+      },
+      "widgets_values": [
+        "videos/####.png",
+        -1,
+        ""
+      ]
+    },
+    {
+      "id": 2,
+      "type": "UpscaleModelLoader",
+      "pos": [
+        100,
+        130
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "UPSCALE_MODEL",
+          "type": "UPSCALE_MODEL",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.52",
+        "Node name for S&R": "UpscaleModelLoader"
+      },
+      "widgets_values": [
+        "4x_foolhardy_Remacri.pt"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "easy string",
+      "pos": [
+        100,
+        318
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.2",
+        "Node name for S&R": "easy string"
+      },
+      "widgets_values": [
+        "output/videos/####.png"
+      ]
     }
+  ],
+  "links": [
+    [
+      9,
+      2,
+      0,
+      4,
+      0,
+      "UPSCALE_MODEL"
+    ],
+    [
+      10,
+      12,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      11,
+      4,
+      0,
+      7,
+      0,
+      "IMAGE"
+    ],
+    [
+      12,
+      7,
+      0,
+      9,
+      0,
+      "IMAGE"
+    ],
+    [
+      13,
+      17,
+      0,
+      10,
+      0,
+      "*"
+    ],
+    [
+      14,
+      17,
+      0,
+      11,
+      0,
+      "*"
+    ],
+    [
+      15,
+      17,
+      0,
+      12,
+      0,
+      "IMAGE"
+    ],
+    [
+      16,
+      19,
+      0,
+      17,
+      0,
+      "STRING"
+    ],
+    [
+      30,
+      30,
+      0,
+      28,
+      0,
+      "*"
+    ],
+    [
+      32,
+      9,
+      0,
+      30,
+      0,
+      "*"
+    ],
+    [
+      33,
+      30,
+      1,
+      31,
+      0,
+      "*"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8801594572862653,
+      "offset": [
+        453.96487608711976,
+        322.1982535299222
+      ]
+    },
+    "frontendVersion": "1.25.10",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
   },
-  "19": {
-    "inputs": {
-      "value": "output/videos/####.png"
-    },
-    "class_type": "easy string",
-    "_meta": {
-      "title": "String"
-    }
-  }
+  "version": 0.4
 }
