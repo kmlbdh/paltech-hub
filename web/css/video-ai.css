@@ -13,5 +13,5 @@ video {
 }
 
 #video-download-link.hidden {
-  display: flex !important; /* Bad practice, but possible */
+  display:none !important; /* Bad practice, but possible */
 }
