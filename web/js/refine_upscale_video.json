@@ -141,7 +141,7 @@
     "inputs": {
       "path": "videos",
       "target_directory": "output",
-      "action": "clear_directory",
+      "action": "delete_path",
       "any_input": [
         "9",
         0
@@ -154,7 +154,7 @@
   },
   "31": {
     "inputs": {
-      "text": "True",
+      "text": "Cleared 3 files and 2 folders from /workspace/ComfyUI/output",
       "anything": [
         "30",
         1
