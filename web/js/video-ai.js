@@ -412,6 +412,21 @@
      }
     }
 
+    function getImageOrientation(imgElement) {
+        if (!imgElement) return null;
+        
+        const width = imgElement.naturalWidth || imgElement.width;
+        const height = imgElement.naturalHeight || imgElement.height;
+        
+        if (width > height) {
+            return 'landscape';
+        } else if (height > width) {
+            return 'portrait';
+        } else {
+            return 'square';
+        }
+    }
+
     function handleImagePreview(file) {
         window.videoGenState.uploadedSourceImageFile = file;
         if (!displaySourceImageEl) return;
@@ -420,6 +435,9 @@
             reader.onload = () => {
                 const img = new Image();
                 img.onload = () => {
+                    const orientation = getImageOrientation(img);
+                    window.videoGenState.imageOrientation = orientation;
+                    updateUIBasedOnImageOrientation();
                     displaySourceImageEl.style.backgroundImage = `url(${reader.result})`;
                     displaySourceImageEl.innerHTML = '';
                 };
@@ -721,6 +739,20 @@
         isRandomInput.addEventListener('change', () => {
             if (seedInput) seedInput.disabled = isRandomInput.checked;
         });
+    }
+    
+    // --- ADD THIS NEW BLOCK ---
+    // Update UI based on image orientation
+    function updateUIBasedOnImageOrientation() {
+        const orientation = window.videoGenState.imageOrientation;
+        if (!orientation) return;
+        console.log('ori', orientation);
+        // Find the corresponding radio button
+        const dimensionRadio = _(`input[name="video-dimensions"][value="${orientation}"]`);
+        if (dimensionRadio) {
+            dimensionRadio.checked = true;
+            setVideoDimensions(orientation);
+        }
     }
 
     // --- Initial Load ---
