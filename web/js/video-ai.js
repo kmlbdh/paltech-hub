@@ -24,10 +24,14 @@
     const videoPlayer = _('#video-player');
     const videoDownloadLink = _('#video-download-link');
     const nodeStatusEl = _('#current-node-status');
+    const videoDimensionRadioBtn = _('#video-dimensions-presets'); // Container for dimension radios
+    // const videoCurrentWidthEl = _('#video-current-width'); // Optional
+    // const videoCurrentHeightEl = _('#video-current-height'); // Optional
 
     // --- State Variables ---
     const workflows = {};
     let IS_GENERATING = false;
+    let IS_GENERATION_SUCCESSFUL = false;
     let currentLanguage = localStorage.getItem('language') || 'ar'; // Default to 'ar' as in image-ai.js
 
     // --- Workflow Node Constants (Wan I2V) ---
@@ -56,6 +60,12 @@
     const WORKFLOW_PATHS = {
         wan_i2v: './js/wan_i2v.json',
         refine_upscale_video: './js/refine_upscale_video.json'
+    };
+
+    const VIDEO_DIMENSION_PRESETS = {
+        square: { width: 832, height: 832 }, // Default, matches existing base size
+        portrait: { width: 480, height: 832 }, // Flipped: W < H
+        landscape: { width: 832, height: 480 } // Flipped: W > H
     };
 
     // Language Data (Extending existing)
@@ -126,6 +136,7 @@
             uploading_image: "uploading the image",
             upload_image_failed: "Image upload failed.",
             ws_connected_message: "WebSocket connected",
+            video_dimensions_title: "Video Dimensions",
             // ... (Ensure all keys used in this script are present)
         },
         ar: {
@@ -191,6 +202,7 @@
             copied_to_clipboard: "تم النسخ إلى الحافظة!",
             upload_image_failed: "فشل رفع الصورة",
             ws_connected_message: "تم الاتصال بالخادم",
+            video_dimensions_title: "ابعاد الفيديو",
             // ... (Ensure all keys used in this script are present)
 
         }
@@ -295,6 +307,26 @@
     }
 
     // --- Utility Functions ---
+    function setVideoDimensions(selectedValue) {
+        // Use the global workflows object to get the base size if needed,
+        // or just use the presets directly.
+        // const baseWorkflow = workflows.wan_i2v;
+        // const baseWidth = baseWorkflow?.[WAN_EMPTY_LATENT_NODE]?.inputs?.width || 1024;
+        // const baseHeight = baseWorkflow?.[WAN_EMPTY_LATENT_NODE]?.inputs?.height || 1024;
+
+        const dimensions = VIDEO_DIMENSION_PRESETS[selectedValue] || VIDEO_DIMENSION_PRESETS.square; // Default to square
+
+        // Update optional display elements if they exist
+        // if (videoCurrentWidthEl) videoCurrentWidthEl.textContent = dimensions.width;
+        // if (videoCurrentHeightEl) videoCurrentHeightEl.textContent = dimensions.height;
+
+        // Store the selected dimensions in a way the generate function can access them
+        // We'll use a temporary property on the window object or a dedicated state variable.
+        // Let's add it to videoGenState for clarity.
+        window.videoGenState.selectedWidth = dimensions.width;
+        window.videoGenState.selectedHeight = dimensions.height;
+    }
+
     function updateLanguageInContext(context, langCode, languagePack) {
         // This function should be in utils.js. If not, copy it from image-ai.js
         // Placeholder call - assuming it exists
@@ -311,8 +343,9 @@
         }
     }
 
-    function updateUIForGenerationState(isGenerating) {
+    function updateUIForGenerationState(isGenerating, isSuccessfulCompletion = false) {
         IS_GENERATING = isGenerating;
+        IS_GENERATION_SUCCESSFUL = isSuccessfulCompletion;
         function toggleDisplay(element, show) {
             if (element) {
                 if (show) element.style.display = '';
@@ -346,23 +379,36 @@
         // Hide the results container on failure or when stopped.
         // Successful completion will manage its own visibility (showing video/player).
         if (videoResultsContainer) {
-             videoResultsContainer.classList.add('hidden'); // <-- Explicitly hide
+             if (IS_GENERATION_SUCCESSFUL) {
+                 // If successful, keep results visible (displayVideoResult handles specifics)
+                 videoResultsContainer.classList.remove('hidden');
+             } else {
+                 // If failed or cancelled, hide results and show guide
+                 videoResultsContainer.classList.add('hidden');
+             }
         }
         // Optionally, ensure guide is shown if it was hidden
-        if (guideContainer) {
-             guideContainer.classList.remove('hidden'); // <-- Explicitly show guide
+        if (guideContainer && !IS_GENERATION_SUCCESSFUL) { // Show guide only if not successful
+             guideContainer.classList.remove('hidden');
         }
         // Reset specific result elements to their initial hidden/processing state
-        // in case they were partially shown or modified before the error.
-        if(videoStatusMessage) videoStatusMessage.classList.remove('hidden'); // Keep status visible briefly?
-        if(videoProcessingSpinner) videoProcessingSpinner.classList.remove('hidden'); // Keep spinner?
-        if(videoPlayer) videoPlayer.classList.add('hidden');
-        if(videoDownloadLink) videoDownloadLink.classList.add('hidden');
-        if(videoStatusMessage) videoStatusMessage.textContent = ''; // Clear status message
-
+        // Only if it's not a successful completion, as displayVideoResult manages that.
+        if (!IS_GENERATION_SUCCESSFUL) {
+            if(videoStatusMessage) {
+                videoStatusMessage.classList.remove('hidden');
+                videoStatusMessage.textContent = '';
+            }
+            if(videoProcessingSpinner) videoProcessingSpinner.classList.remove('hidden'); // Keep spinner visible if needed for next start?
+            if(videoPlayer) videoPlayer.classList.add('hidden');
+            if(videoDownloadLink) videoDownloadLink.classList.add('hidden');
+        }
         // The original comment's intent might have been to keep results if successful,
         // but the successful path (displayVideoResult) handles that.
         // This else block now correctly handles the failure/reset case.
+        
+        // Reset progress bar and node status
+        updateProgress(0);
+        if(nodeStatusEl) nodeStatusEl.innerText = '';
      }
     }
 
@@ -494,6 +540,17 @@
             if (wf_wan_i2v[WAN_LOAD_IMAGE_NODE]) {
                  wf_wan_i2v[WAN_LOAD_IMAGE_NODE].inputs.image = comfyUIImageName;
             }
+            
+            // --- ADD THIS BLOCK ---
+            // Set the width and height in the EmptySD3LatentImage node (Node 355)
+            if (wf_wan_i2v[WAN_EMPTY_LATENT_NODE]) {
+                wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.width = window.videoGenState.selectedWidth || VIDEO_DIMENSION_PRESETS.square; // Fallback
+                wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.height = window.videoGenState.selectedHeight || VIDEO_DIMENSION_PRESETS.square; // Fallback
+                console.log(`Set video dimensions to ${wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.width}x${wf_wan_i2v[WAN_EMPTY_LATENT_NODE].inputs.height}`);
+            } else {
+                console.warn(`Node ${WAN_EMPTY_LATENT_NODE} not found in wan_i2v workflow. Dimensions not set.`);
+            }
+            // --- END ADD BLOCK ---
             // Model Sampling Shift? Assuming default or handled. If needed, adjust nodes 54 & 55.
 
             console.log("Queueing Wan I2V workflow...");
@@ -573,11 +630,9 @@
                 }
                 // Check if this execution corresponds to the final save node of the *upscale* workflow
                 // Node 9 is 'KMLBDH_VideoCombine' in refine_upscale_video.json. It saves the final video.
-                // if (data.data.node === '9' && IS_GENERATING && data.data.output?.images?.length > 0) {
                 if (data.data.node === '9' && IS_GENERATING && data.data.output?.video?.length > 0) { 
                     console.log("Final video saved by 'KMLBDH_VideoCombine' (Node 9).");
                     // Extract the video file path
-                    // const videoOutput = data.data.output.images[0];
                     const videoOutput = data.data.output.video[0];
 
                     if (videoOutput.filename) {
@@ -588,16 +643,27 @@
                         window.videoGenState.generatedVideoFilename = videoOutput.filename.split('/').pop(); // Get filename part
                         console.log("Final video path:", videoPath);
 
-                        // --- Step 5: Display Video ---
-                        updateUIForGenerationState(false); // Hide spinner, show player/link
+                        // --- Display Video and Update UI for Success ---
+                        // 1. Display the video player and download link
+                        displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
+                        // 2. Update UI state: Not generating anymore, AND mark as successful
+                        updateUIForGenerationState(false, true);
+                        // 3. Show notification
                         window.appUtils.displayNotification('video_generation_completed', langConfig);
+                        // 4. Update node status
                         if (nodeStatusEl) {
                             nodeStatusEl.textContent = t('finished_status', 'Finished!');
                         }
-                        displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
+                        // --- End Display Video ---
+                        // updateUIForGenerationState(false); // Hide spinner, show player/link
+                        // window.appUtils.displayNotification('video_generation_completed', langConfig);
+                        // if (nodeStatusEl) {
+                        //     nodeStatusEl.textContent = t('finished_status', 'Finished!');
+                        // }
+                        // displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
                     } else {
                         console.warn("Could not determine final video path from executed data.");
-                        updateUIForGenerationState(false);
+                        updateUIForGenerationState(false, false);
                         window.appUtils.displayModalMessage('Could not retrieve final video.', langConfig);
                     }
                 }
@@ -605,11 +671,23 @@
                 break;
             case 'execution_error':
             case 'execution_interrupted':
-                updateUIForGenerationState(false);
+                updateUIForGenerationState(false, false);
                 window.appUtils.displayNotification('video_generation_interrupted', langConfig);
                 if (nodeStatusEl) {
                     nodeStatusEl.textContent = t('interrupted_status', 'Interrupted!');
                 }
+                break;
+            case 'execution_success': // Handle the success message if needed
+                // Usually, the 'executed' message for the final node handles this.
+                // But if for some reason it doesn't, or you want extra confirmation:
+                // if (IS_GENERATING) {
+                //     updateUIForGenerationState(false, true); // Ensure success state if still marked as generating
+                // }
+                // For now, just log it's unknown or ignore if handled elsewhere
+                console.log('Unknown WS message type (video gen):', data.type); // Or remove the log if handled
+                break;
+            case 'progress_state': // Same for progress_state
+                console.log('Unknown WS message type (video gen):', data.type);
                 break;
             case 'status':
                 const isProcessing = data.data.status?.exec_info?.queue_remaining > 0;
@@ -680,6 +758,18 @@
 
         // Set initial video length
         setVideoLength(_('input[name="video-length"]:checked')?.value || 'short');
+
+        // --- ADD THIS BLOCK ---
+        // Set initial video dimensions
+        setVideoDimensions(_('input[name="video-dimensions"]:checked')?.value || 'square');
+        // Add event listener for dimension changes
+        if (videoDimensionRadioBtn) {
+            videoDimensionRadioBtn.addEventListener('change', e => {
+                if (e.target.name === 'video-dimensions') {
+                    setVideoDimensions(e.target.value);
+                }
+            });
+        }
 
         // Load workflows
         await load_api_workflows();

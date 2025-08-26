@@ -123,7 +123,8 @@
         }
 
         /* Custom styling for radio buttons */
-        .video-length-radio {
+        .video-length-radio,
+        .video-dimensions-radio {
             display: none;
         }
         html[data-theme='white'] .video-length-label {
@@ -131,7 +132,8 @@
             background-color: #ffffff; /* bg-white */
             color: #1f2937; /* text-gray-800 */
         }
-        html[data-theme='white'] .video-length-radio:checked + .video-length-label {
+        html[data-theme='white'] .video-length-radio:checked + .video-length-label,
+        html[data-theme='white'] .video-dimensions-radio:checked + .video-length-label {
             background-color: #e0e7ff; /* light blue tint */
         }
         html[data-theme='white'] .video-length-label:hover {
@@ -142,7 +144,8 @@
             background-color: #111827; /* bg-gray-900 */
             color: #e5e7eb; /* text-gray-200 */
         }
-        html[data-theme='dark'] .video-length-radio:checked + .video-length-label {
+        html[data-theme='dark'] .video-length-radio:checked + .video-length-label,
+        html[data-theme='dark'] .video-dimensions-radio:checked + .video-length-label {
             background-color: #1f2937; /* bg-gray-800 */
         }
         html[data-theme='dark'] .video-length-label:hover {
@@ -556,6 +559,44 @@
                                                 <input id="video-length-frames" type="number" value="81" min="17" max="101" step="8" class="mt-1 block w-full rounded-md shadow-sm text-center opacity-50" disabled>
                                                 <div class="absolute inset-0 z-10 cursor-not-allowed"></div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <details class="space-y-4" open>
+                                <summary class="text-lg font-semibold cursor-pointer list-none text-gray-900 dark:text-white" data-lang-key="video_dimensions_title">Video Dimensions</summary>
+                                <div class="pl-4 pt-4 border-l-2 border-gray-300 dark:border-gray-700 space-y-4">
+                                    <div id="video-dimensions-presets" class="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <input type="radio" name="video-dimensions" id="dimension-square" value="square" class="video-dimensions-radio" checked>
+                                            <label for="dimension-square" class="video-length-label text-xs cursor-pointer flex flex-col items-center p-2"> <!-- Note: using video-length-label style -->
+                                                <!-- Simple square icon -->
+                                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                </svg>
+                                                <span data-lang-key="dimension_square">Square</span>
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <input type="radio" name="video-dimensions" id="dimension-portrait" value="portrait" class="video-dimensions-radio">
+                                            <label for="dimension-portrait" class="video-length-label text-xs cursor-pointer flex flex-col items-center p-2">
+                                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <rect x="6" y="2" width="12" height="20" rx="2" ry="2"></rect>
+                                                    <line x1="12" y1="18" x2="12" y2="18"></line>
+                                                </svg>
+                                                <span data-lang-key="dimension_portrait">Portrait</span>
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <input type="radio" name="video-dimensions" id="dimension-landscape" value="landscape" class="video-dimensions-radio">
+                                            <label for="dimension-landscape" class="video-length-label text-xs cursor-pointer flex flex-col items-center p-2">
+                                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                                                    <line x1="18" y1="12" x2="18" y2="12"></line>
+                                                </svg>
+                                                <span data-lang-key="dimension_landscape">Landscape</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
