@@ -491,11 +491,17 @@
         videoDownloadLink.download = filename || 'generated_video.mp4'; // Suggest a filename
 
         // Update UI
-        if(videoStatusMessage) videoStatusMessage.classList.add('hidden');
-        if(videoProcessingSpinner) videoProcessingSpinner.classList.add('hidden');
         videoPlayer.classList.remove('hidden');
         videoDownloadLink.classList.remove('hidden');
-        if(videoStatusMessage) videoStatusMessage.textContent = ""; // Clear message
+
+        // Explicitly hide the processing status and spinner
+        if (videoStatusMessage) {
+            videoStatusMessage.classList.add('hidden'); // Hide the "Processing video..." message
+            videoStatusMessage.textContent = ""; // Clear the message text
+        }
+        if (videoProcessingSpinner) {
+            videoProcessingSpinner.classList.add('hidden'); // Hide the spinner
+        }
     }
 
 
@@ -642,25 +648,28 @@
                         nodeStatusEl.textContent = `${t('executing_status', 'Executing')} ${data.data.node}`;
                     }
                     
+                    // --- MODIFY: Only update progress if final video hasn't been received yet ---
                     // Estimate progress: If we know the total nodes, update the bar
                     // This assumes nodes execute roughly in order or that we get messages for most nodes.
-                    if (CURRENT_WORKFLOW_TOTAL_NODES > 0 && !HAS_RECEIVED_FINAL_VIDEO) {
-                        // Simple estimation: increment progress for each node start.
-                        // A more complex method could try to map node IDs to an order if needed,
-                        // but this is a reasonable starting point.
-                        // We need to track how many nodes have started.
-                        // Let's add a simple counter to window.videoGenState or as a local var in this scope/context.
-                        // For simplicity here, we'll just increment a counter each time 'executing' is called
-                        // for a non-null node, up to total nodes - 1 (as the last node triggers completion).
-                        // Let's add a counter to videoGenState.
-                        window.videoGenState.executedNodeCount = (window.videoGenState.executedNodeCount || 0) + 1;
-                        
-                        // Cap progress at Total Nodes - 1 to leave final jump for completion
-                        const progressValue = Math.min(window.videoGenState.executedNodeCount, CURRENT_WORKFLOW_TOTAL_NODES - 1);
-                        updateProgress(progressValue, CURRENT_WORKFLOW_TOTAL_NODES);
-                        console.log(`Estimated progress: ${progressValue}/${CURRENT_WORKFLOW_TOTAL_NODES} (Node: ${data.data.node})`);
+                    if (CURRENT_WORKFLOW_TOTAL_NODES > 0) { // Check if tracking is active
+                         if (!HAS_RECEIVED_FINAL_VIDEO) { // Check if final result is processed
+                            // Simple estimation: increment progress for each node start.
+                            window.videoGenState.executedNodeCount = (window.videoGenState.executedNodeCount || 0) + 1;
+
+                            // Cap progress at Total Nodes - 1 to leave final jump for completion
+                            const progressValue = Math.min(window.videoGenState.executedNodeCount, CURRENT_WORKFLOW_TOTAL_NODES - 1);
+                            updateProgress(progressValue, CURRENT_WORKFLOW_TOTAL_NODES);
+                            console.log(`Estimated progress: ${progressValue}/${CURRENT_WORKFLOW_TOTAL_NODES} (Node: ${data.data.node})`);
+                         } else {
+                             // --- ADD DEBUG LOG ---
+                             console.log(`Skipping progress update for node ${data.data.node} because HAS_RECEIVED_FINAL_VIDEO is true.`);
+                             // --- END DEBUG LOG ---
+                         }
+                    } else {
+                        // Optional: Log if tracking isn't active
+                        // console.log(`Skipping progress update for node ${data.data.node}, tracking not active (Total Nodes: ${CURRENT_WORKFLOW_TOTAL_NODES}).`);
                     }
-                    // --- END: Update progress based on node execution ---
+                    // --- END: Modify progress update ---
                 }
                 break;
             case 'executed':
@@ -732,6 +741,7 @@
                         // 1. Display the video player and download link
                         displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
                         // Set progress to 100% upon final node completion
+                        
                         if (CURRENT_WORKFLOW_TOTAL_NODES > 0) {
                             updateProgress(CURRENT_WORKFLOW_TOTAL_NODES, CURRENT_WORKFLOW_TOTAL_NODES);
                             console.log("Progress set to 100% on final node completion.");
