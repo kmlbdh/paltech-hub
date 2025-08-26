@@ -68,11 +68,6 @@
         landscape: { width: 832, height: 480 } // Flipped: W > H
     };
 
-    // --- ADD: Workflow Progress Tracking ---
-    let CURRENT_WORKFLOW_TOTAL_NODES = 0; // Total nodes in the workflow currently running
-    let CURRENT_WORKFLOW_FINAL_NODE_ID = null; // ID of the last node expected to execute
-    let HAS_RECEIVED_FINAL_VIDEO = false; // <-- Add this flag
-
     // Language Data (Extending existing)
     // Assuming `languages` object from image-ai.js is available globally or imported
     // If not, you'll need to define it here or import it.
@@ -351,19 +346,6 @@
     function updateUIForGenerationState(isGenerating, isSuccessfulCompletion = false) {
         IS_GENERATING = isGenerating;
         IS_GENERATION_SUCCESSFUL = isSuccessfulCompletion;
-
-        // --- ADD: Reset progress tracking when generation starts ---
-        if (isGenerating) {
-            CURRENT_WORKFLOW_TOTAL_NODES = 0;
-            CURRENT_WORKFLOW_FINAL_NODE_ID = null;
-            HAS_RECEIVED_FINAL_VIDEO = false; // <-- Add this line
-            // Reset node counter if it exists
-            if (window.videoGenState) {
-                window.videoGenState.executedNodeCount = 0;
-            }
-        }
-        // --- END: Reset progress tracking ---
-
         function toggleDisplay(element, show) {
             if (element) {
                 if (show) element.style.display = '';
@@ -491,17 +473,11 @@
         videoDownloadLink.download = filename || 'generated_video.mp4'; // Suggest a filename
 
         // Update UI
+        if(videoStatusMessage) videoStatusMessage.classList.add('hidden');
+        if(videoProcessingSpinner) videoProcessingSpinner.classList.add('hidden');
         videoPlayer.classList.remove('hidden');
         videoDownloadLink.classList.remove('hidden');
-
-        // Explicitly hide the processing status and spinner
-        if (videoStatusMessage) {
-            videoStatusMessage.classList.add('hidden'); // Hide the "Processing video..." message
-            videoStatusMessage.textContent = ""; // Clear the message text
-        }
-        if (videoProcessingSpinner) {
-            videoProcessingSpinner.classList.add('hidden'); // Hide the spinner
-        }
+        if(videoStatusMessage) videoStatusMessage.textContent = ""; // Clear message
     }
 
 
@@ -561,15 +537,6 @@
 
             // --- Step 2: Prepare Wan I2V Workflow ---
             let wf_wan_i2v = JSON.parse(JSON.stringify(workflows.wan_i2v));
-
-            // --- ADD: Track Wan I2V Workflow Info Before Queueing ---
-            // Estimate total nodes (roughly nodes array length)
-            const totalNodesWanI2V = Object.keys(wf_wan_i2v).length;
-            // Assume the final save node is 163 (based on previous discussions and workflow)
-            const finalNodeIdWanI2V = '163';
-            console.log(`Prepared Wan I2V workflow. Estimated total nodes: ${totalNodesWanI2V}, Final node ID: ${finalNodeIdWanI2V}`);
-            // --- END: Track Wan I2V Workflow Info ---
-
             if(wf_wan_i2v[WAN_CLIP_TEXT_ENCODE_NODE]) {
                 wf_wan_i2v[WAN_CLIP_TEXT_ENCODE_NODE].inputs.text = videoPromptInput.value;
             }
@@ -600,12 +567,6 @@
             await window.appUtils.queuePrompt(wf_wan_i2v, window.sharedWS.client_id);
             console.log("Wan I2V workflow queued.");
 
-            // --- ADD: Update Progress Tracking After Queueing ---
-            CURRENT_WORKFLOW_TOTAL_NODES = totalNodesWanI2V;
-            CURRENT_WORKFLOW_FINAL_NODE_ID = finalNodeIdWanI2V;
-            updateProgress(0, CURRENT_WORKFLOW_TOTAL_NODES); // Initialize progress bar
-            // --- END: Update Progress Tracking ---
-
             // --- Step 3: Wait for Wan I2V Completion and Get Output Path ---
             // This is tricky without knowing the exact output node or filename format.
             // The `Save Images Mikey` node (163) saves the images.
@@ -635,7 +596,7 @@
 
         switch (data.type) {
             case 'progress':
-                // updateProgress(data.data.value, data.data.max);
+                updateProgress(data.data.value, data.data.max);
                 if (data.data.node && nodeStatusEl) {
                     nodeStatusEl.textContent = `${t('processing_status', 'Processing')} ${data.data.node}`;
                 }
@@ -647,29 +608,6 @@
                     if (nodeStatusEl) {
                         nodeStatusEl.textContent = `${t('executing_status', 'Executing')} ${data.data.node}`;
                     }
-                    
-                    // --- MODIFY: Only update progress if final video hasn't been received yet ---
-                    // Estimate progress: If we know the total nodes, update the bar
-                    // This assumes nodes execute roughly in order or that we get messages for most nodes.
-                    if (CURRENT_WORKFLOW_TOTAL_NODES > 0) { // Check if tracking is active
-                         if (!HAS_RECEIVED_FINAL_VIDEO) { // Check if final result is processed
-                            // Simple estimation: increment progress for each node start.
-                            window.videoGenState.executedNodeCount = (window.videoGenState.executedNodeCount || 0) + 1;
-
-                            // Cap progress at Total Nodes - 1 to leave final jump for completion
-                            const progressValue = Math.min(window.videoGenState.executedNodeCount, CURRENT_WORKFLOW_TOTAL_NODES - 1);
-                            updateProgress(progressValue, CURRENT_WORKFLOW_TOTAL_NODES);
-                            console.log(`Estimated progress: ${progressValue}/${CURRENT_WORKFLOW_TOTAL_NODES} (Node: ${data.data.node})`);
-                         } else {
-                             // --- ADD DEBUG LOG ---
-                             console.log(`Skipping progress update for node ${data.data.node} because HAS_RECEIVED_FINAL_VIDEO is true.`);
-                             // --- END DEBUG LOG ---
-                         }
-                    } else {
-                        // Optional: Log if tracking isn't active
-                        // console.log(`Skipping progress update for node ${data.data.node}, tracking not active (Total Nodes: ${CURRENT_WORKFLOW_TOTAL_NODES}).`);
-                    }
-                    // --- END: Modify progress update ---
                 }
                 break;
             case 'executed':
@@ -688,46 +626,16 @@
                         let wf_upscale = JSON.parse(JSON.stringify(workflows.refine_upscale_video));
                         // No path update needed - nodes are assumed correctly configured
                         console.log("Queueing upscale workflow...");
-                         
-                        // --- ADD: Track Upscale Workflow Info Before Queueing ---
-                        const totalNodesUpscale = Object.keys(wf_upscale).length;
-                        // Assume the final save node is 9 (based on previous discussions and workflow)
-                        const finalNodeIdUpscale = '9';
-                        console.log(`Prepared Upscale workflow. Estimated total nodes: ${totalNodesUpscale}, Final node ID: ${finalNodeIdUpscale}`);
-                        // --- END: Track Upscale Workflow Info ---
-
                         window.appUtils.queuePrompt(wf_upscale, window.sharedWS.client_id)
-                        .then(() => {
-                            // --- ADD: Update Progress Tracking After Queueing Upscale ---
-                            CURRENT_WORKFLOW_TOTAL_NODES = totalNodesUpscale;
-                            CURRENT_WORKFLOW_FINAL_NODE_ID = finalNodeIdUpscale;
-                            window.videoGenState.executedNodeCount = 0; // Reset counter for new workflow
-                            updateProgress(0, CURRENT_WORKFLOW_TOTAL_NODES); // Initialize progress bar for upscale
-                            console.log("Upscale workflow queued and progress tracking updated.");
-                            // --- END: Update Progress Tracking ---
-                        })
-                        .catch(err => {
-                            console.error("Error queuing upscale workflow:", err);
-                            window.appUtils.displayModalMessage(`Upscale queue failed: ${err.message}`, langConfig);
-                            updateUIForGenerationState(false);
-                        });
+                            .catch(err => {
+                                console.error("Error queuing upscale workflow:", err);
+                                window.appUtils.displayModalMessage(`Upscale queue failed: ${err.message}`, langConfig);
+                                updateUIForGenerationState(false);
+                            });
                     } else {
                         console.error("Upscale workflow not loaded.");
                         window.appUtils.displayModalMessage('Upscale workflow not loaded.', langConfig);
                         updateUIForGenerationState(false);
-                    }
-                }
-                if (data.data.node === '9') { // Simplify initial check for logging
-                    console.log("DEBUG: Node 9 executed. IS_GENERATING:", IS_GENERATING, "Output Video Length:", data.data.output?.video?.length);
-                    if (IS_GENERATING && data.data.output?.video?.length > 0) {
-                        console.log("DEBUG: Entering Node 9 success handling block.");
-                        // --- Existing code for node 9 ---
-                        console.log("Final video saved by 'KMLBDH_VideoCombine' (Node 9).");
-                        HAS_RECEIVED_FINAL_VIDEO = true;
-                        const videoOutput = data.data.output.video[0];
-                        // ... rest of the logic ...
-                    } else {
-                        console.log("DEBUG: Node 9 executed but condition failed. IS_GENERATING:", IS_GENERATING, "Output Video Length:", data.data.output?.video?.length);
                     }
                 }
                 // Check if this execution corresponds to the final save node of the *upscale* workflow
@@ -745,20 +653,9 @@
                         window.videoGenState.generatedVideoFilename = videoOutput.filename.split('/').pop(); // Get filename part
                         console.log("Final video path:", videoPath);
 
-                        // --- ADD: Set the flag BEFORE starting UI updates ---
-                        HAS_RECEIVED_FINAL_VIDEO = true; // <-- Add this line
-                        console.log("HAS_RECEIVED_FINAL_VIDEO flag set to true.");
-                        // --- END: Set flag ---
-
                         // --- Display Video and Update UI for Success ---
                         // 1. Display the video player and download link
                         displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
-                        // Set progress to 100% upon final node completion
-                        
-                        if (CURRENT_WORKFLOW_TOTAL_NODES > 0) {
-                            updateProgress(CURRENT_WORKFLOW_TOTAL_NODES, CURRENT_WORKFLOW_TOTAL_NODES);
-                            console.log("Progress set to 100% on final node completion.");
-                        }
                         // 2. Update UI state: Not generating anymore, AND mark as successful
                         updateUIForGenerationState(false, true);
                         // 3. Show notification
@@ -774,20 +671,16 @@
                         //     nodeStatusEl.textContent = t('finished_status', 'Finished!');
                         // }
                         // displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
-                        console.log("Node 9 handling complete. Waiting for execution_success (which should now be ignored due to IS_GENERATING=false).");
                     } else {
                         console.warn("Could not determine final video path from executed data.");
-                        HAS_RECEIVED_FINAL_VIDEO = true; // <-- Add this line
                         updateUIForGenerationState(false, false);
                         window.appUtils.displayModalMessage('Could not retrieve final video.', langConfig);
                     }
-                    return;
                 }
                 // --- MODIFIED BLOCK ENDS HERE ---
                 break;
             case 'execution_error':
             case 'execution_interrupted':
-                updateProgress(0);
                 updateUIForGenerationState(false, false);
                 window.appUtils.displayNotification('video_generation_interrupted', langConfig);
                 if (nodeStatusEl) {
@@ -795,20 +688,13 @@
                 }
                 break;
             case 'execution_success': // Handle the success message if needed
-                // This message signifies the overall workflow queue item finished successfully.
-                // It arrives after the final 'executed' message for the last node.
-                // Ensure the UI reflects successful completion if we were generating.
-                // Although the 'executed' for node 9 should handle it, this is a backup.
-                if (IS_GENERATING) {
-                    console.log("Received 'execution_success', finalizing UI state as successful.");
-                    // Ensure progress is full
-                    if (CURRENT_WORKFLOW_TOTAL_NODES > 0) {
-                        updateProgress(CURRENT_WORKFLOW_TOTAL_NODES, CURRENT_WORKFLOW_TOTAL_NODES);
-                    }
-                    updateUIForGenerationState(false, true); // Mark as not generating AND successful
-                } else {
-                     console.log("Received 'execution_success' but IS_GENERATING is false. Node 9 handler likely already processed the result.");
-                }
+                // Usually, the 'executed' message for the final node handles this.
+                // But if for some reason it doesn't, or you want extra confirmation:
+                // if (IS_GENERATING) {
+                //     updateUIForGenerationState(false, true); // Ensure success state if still marked as generating
+                // }
+                // For now, just log it's unknown or ignore if handled elsewhere
+                console.log('Unknown WS message type (video gen):', data.type); // Or remove the log if handled
                 break;
             case 'progress_state': // Same for progress_state
                 console.log('Unknown WS message type (video gen):', data.type);
