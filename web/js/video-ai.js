@@ -71,6 +71,7 @@
     // --- ADD: Workflow Progress Tracking ---
     let CURRENT_WORKFLOW_TOTAL_NODES = 0; // Total nodes in the workflow currently running
     let CURRENT_WORKFLOW_FINAL_NODE_ID = null; // ID of the last node expected to execute
+    let HAS_RECEIVED_FINAL_VIDEO = false; // <-- Add this flag
 
     // Language Data (Extending existing)
     // Assuming `languages` object from image-ai.js is available globally or imported
@@ -355,6 +356,11 @@
         if (isGenerating) {
             CURRENT_WORKFLOW_TOTAL_NODES = 0;
             CURRENT_WORKFLOW_FINAL_NODE_ID = null;
+            HAS_RECEIVED_FINAL_VIDEO = false; // <-- Add this line
+            // Reset node counter if it exists
+            if (window.videoGenState) {
+                window.videoGenState.executedNodeCount = 0;
+            }
         }
         // --- END: Reset progress tracking ---
 
@@ -638,7 +644,7 @@
                     
                     // Estimate progress: If we know the total nodes, update the bar
                     // This assumes nodes execute roughly in order or that we get messages for most nodes.
-                    if (CURRENT_WORKFLOW_TOTAL_NODES > 0) {
+                    if (CURRENT_WORKFLOW_TOTAL_NODES > 0 && !HAS_RECEIVED_FINAL_VIDEO) {
                         // Simple estimation: increment progress for each node start.
                         // A more complex method could try to map node IDs to an order if needed,
                         // but this is a reasonable starting point.
@@ -717,6 +723,11 @@
                         window.videoGenState.generatedVideoFilename = videoOutput.filename.split('/').pop(); // Get filename part
                         console.log("Final video path:", videoPath);
 
+                        // --- ADD: Set the flag BEFORE starting UI updates ---
+                        HAS_RECEIVED_FINAL_VIDEO = true; // <-- Add this line
+                        console.log("HAS_RECEIVED_FINAL_VIDEO flag set to true.");
+                        // --- END: Set flag ---
+
                         // --- Display Video and Update UI for Success ---
                         // 1. Display the video player and download link
                         displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
@@ -742,6 +753,7 @@
                         // displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
                     } else {
                         console.warn("Could not determine final video path from executed data.");
+                        HAS_RECEIVED_FINAL_VIDEO = true; // <-- Add this line
                         updateUIForGenerationState(false, false);
                         window.appUtils.displayModalMessage('Could not retrieve final video.', langConfig);
                     }
