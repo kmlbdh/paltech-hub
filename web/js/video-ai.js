@@ -717,6 +717,19 @@
                         updateUIForGenerationState(false);
                     }
                 }
+                if (data.data.node === '9') { // Simplify initial check for logging
+                    console.log("DEBUG: Node 9 executed. IS_GENERATING:", IS_GENERATING, "Output Video Length:", data.data.output?.video?.length);
+                    if (IS_GENERATING && data.data.output?.video?.length > 0) {
+                        console.log("DEBUG: Entering Node 9 success handling block.");
+                        // --- Existing code for node 9 ---
+                        console.log("Final video saved by 'KMLBDH_VideoCombine' (Node 9).");
+                        HAS_RECEIVED_FINAL_VIDEO = true;
+                        const videoOutput = data.data.output.video[0];
+                        // ... rest of the logic ...
+                    } else {
+                        console.log("DEBUG: Node 9 executed but condition failed. IS_GENERATING:", IS_GENERATING, "Output Video Length:", data.data.output?.video?.length);
+                    }
+                }
                 // Check if this execution corresponds to the final save node of the *upscale* workflow
                 // Node 9 is 'KMLBDH_VideoCombine' in refine_upscale_video.json. It saves the final video.
                 if (data.data.node === '9' && IS_GENERATING && data.data.output?.video?.length > 0) { 
@@ -761,12 +774,14 @@
                         //     nodeStatusEl.textContent = t('finished_status', 'Finished!');
                         // }
                         // displayVideoResult(videoPath, window.videoGenState.generatedVideoFilename);
+                        console.log("Node 9 handling complete. Waiting for execution_success (which should now be ignored due to IS_GENERATING=false).");
                     } else {
                         console.warn("Could not determine final video path from executed data.");
                         HAS_RECEIVED_FINAL_VIDEO = true; // <-- Add this line
                         updateUIForGenerationState(false, false);
                         window.appUtils.displayModalMessage('Could not retrieve final video.', langConfig);
                     }
+                    return;
                 }
                 // --- MODIFIED BLOCK ENDS HERE ---
                 break;
@@ -791,6 +806,8 @@
                         updateProgress(CURRENT_WORKFLOW_TOTAL_NODES, CURRENT_WORKFLOW_TOTAL_NODES);
                     }
                     updateUIForGenerationState(false, true); // Mark as not generating AND successful
+                } else {
+                     console.log("Received 'execution_success' but IS_GENERATING is false. Node 9 handler likely already processed the result.");
                 }
                 break;
             case 'progress_state': // Same for progress_state
