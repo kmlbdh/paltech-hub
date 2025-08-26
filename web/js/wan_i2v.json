@@ -100,7 +100,7 @@
   },
   "54": {
     "inputs": {
-      "shift": 6.500000000000001,
+      "shift": 6.5,
       "model": [
         "64",
         0
@@ -113,7 +113,7 @@
   },
   "55": {
     "inputs": {
-      "shift": 6.500000000000001,
+      "shift": 6.5,
       "model": [
         "65",
         0
@@ -310,6 +310,43 @@
     "class_type": "easy clearCacheAll",
     "_meta": {
       "title": "Clear Cache All"
+    }
+  },
+  "172": {
+    "inputs": {
+      "message": "🧹 kmlbdh RAM Cleaner: Cache cleared",
+      "images": [
+        "52",
+        0
+      ]
+    },
+    "class_type": "KMLBDH_RAMCleaner",
+    "_meta": {
+      "title": "🧹 kmlbdh RAM Cleaner"
+    }
+  },
+  "173": {
+    "inputs": {
+      "anything": [
+        "172",
+        0
+      ]
+    },
+    "class_type": "easy clearCacheAll",
+    "_meta": {
+      "title": "Clear Cache All"
+    }
+  },
+  "174": {
+    "inputs": {
+      "anything": [
+        "172",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "Clean VRAM Used"
     }
   }
 }
