@@ -997,14 +997,14 @@
             // --- UPDATE FLUX RESOLUTION NODE ---
             // This is the key change based on your request
             // Get values from the new UI elements
-            const userMegapixel = parseFloat(img_megapixel_input.value);
+            // const userMegapixel = parseFloat(img_megapixel_input.value);
             const userAspectRatio = img_aspect_ratio_select.value; // This should match the format expected by the node, e.g., "1:1"
 
             // Find the FluxResolutionNode in your workflow (node ID '108')
             const fluxResolutionNode = wf_to_use[FLUX_RESOLUTION_NODE];
             if (fluxResolutionNode) {
                 // Update the inputs of the FluxResolutionNode
-                // fluxResolutionNode.inputs.megapixel = userMegapixel;
+                fluxResolutionNode.inputs.megapixel = "1.0";
                 fluxResolutionNode.inputs.aspect_ratio = userAspectRatio;
                 // Ensure custom_ratio is false if you're using the preset list
                 fluxResolutionNode.inputs.custom_ratio = false;
