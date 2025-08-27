@@ -647,11 +647,22 @@
         html[data-theme='dark'] .sticky.bottom-4.bg-white.dark\:bg-gray-800 {
             background-color: #1f2937; /* bg-gray-800 */
         }
-        #display-uploaded-image {
+        #display-uploaded-image-1,
+        #display-uploaded-image-2 {
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             min-height: 150px;
+        }
+        html[data-theme='white'] #display-uploaded-image-1,
+        html[data-theme='white'] #display-uploaded-image-2{
+            background-color: #f9fafb; /* bg-gray-50 */
+            border-color: #d1d5db; /* border-gray-300 */
+        }
+        html[data-theme='dark'] #display-uploaded-image-1,
+        html[data-theme='dark'] #display-uploaded-image-2 {
+            background-color: #1f2937; /* bg-gray-800/50 */
+            border-color: #374151; /* border-gray-700 */
         }
         #aspect-ratio-icon {
             display: none; /* Hide by default */
@@ -797,48 +808,15 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" data-lang-key="image_size_label">Image Size</label>
+                                        <div></div>
+                                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2" > 
+                                            <span class="text-sm text-gray-500 dark:text-gray-400 pl-2" data-lang-key="image_size_label">Image Size</span>
+                                            (<span class="text-xs text-gray-600" data-lang-key="aspect_ratio">Aspect Ratio</span>)
+                                        </label>
 
-                                        <!-- Replace the existing height/width inputs -->
-                                        <!-- <div class="mt-4 grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="image-megapixel" class="block text-xs font-medium text-gray-500 dark:text-gray-400 cursor-not-allowed" data-lang-key="megapixel">Megapixel</label>
-                                                <input id="image-megapixel" type="number" value="1.0" min="0.1" step="0.1" class="mt-1 block w-full rounded-md shadow-sm text-center  dark:text-gray-400 cursor-not-allowed" disabled>
-                                            </div>
-                                            <div>
-                                                <label for="image-aspect-ratio" class="block text-xs font-medium text-gray-500 dark:text-gray-400" data-lang-key="aspect_ratio">Aspect Ratio</label>
-                                                <select id="image-aspect-ratio" class="mt-1 block w-full rounded-md shadow-sm">
-                                                    <option value="1:1 (Perfect Square)">1:1 (Perfect Square)</option>
-                                                    <option value="2:3 (Classic Portrait)">2:3 (Classic Portrait)</option>
-                                                    <option value="3:4 (Golden Ratio)">3:4 (Golden Ratio)</option>
-                                                    <option value="3:5 (Elegant Vertical)">3:5 (Elegant Vertical)</option>
-                                                    <option value="4:5 (Artistic Frame)">4:5 (Artistic Frame)</option>
-                                                    <option value="5:7 (Balanced Portrait)">5:7 (Balanced Portrait)</option>
-                                                    <option value="5:8 (Tall Portrait)">5:8 (Tall Portrait)</option>
-                                                    <option value="7:9 (Modern Portrait)">7:9 (Modern Portrait)</option>
-                                                    <option value="9:16 (Slim Vertical)">9:16 (Slim Vertical)</option>
-                                                    <option value="9:19 (Tall Slim)">9:19 (Tall Slim)</option>
-                                                    <option value="9:21 (Ultra Tall)">9:21 (Ultra Tall)</option>
-                                                    <option value="9:32 (Skyline)">9:32 (Skyline)</option>
-                                                    <option value="3:2 (Golden Landscape)">3:2 (Golden Landscape)</option>
-                                                    <option value="4:3 (Classic Landscape)">4:3 (Classic Landscape)</option>
-                                                    <option value="5:3 (Wide Landscape)">5:3 (Wide Landscape)</option>
-                                                    <option value="5:4 (Balanced Frame)">5:4 (Balanced Frame)</option>
-                                                    <option value="7:5 (Elegant Landscape)">7:5 (Elegant Landscape)</option>
-                                                    <option value="8:5 (Cinematic View)">8:5 (Cinematic View)</option>
-                                                    <option value="9:7 (Artful Horizon)">9:7 (Artful Horizon)</option>
-                                                    <option value="16:9 (Panorama)">16:9 (Panorama)</option>
-                                                    <option value="19:9 (Cinematic Ultrawide)">19:9 (Cinematic Ultrawide)</option>
-                                                    <option value="21:9 (Epic Ultrawide)">21:9 (Epic Ultrawide)</option>
-                                                    <option value="32:9 (Extreme Ultrawide)">32:9 (Extreme Ultrawide)</option>
-                                                </select>
-                                            </div>
-                                        </div> -->
-                                        <!-- Display Calculated Dimensions -->
-                                         
                                         <!-- Updated Grid Layout -->
                                         <div class="mt-4 flex gap-4"> <!-- Changed grid-cols-2 to grid-cols-3 -->
-                                            <div class="w-1/3"> <!-- Added col-span-1 for Megapixel -->
+                                            <div class="hidden"> <!-- Added col-span-1 for Megapixel -->
                                                 <label for="image-megapixel" class="block text-s font-medium text-gray-500 dark:text-gray-400">Megapixel</label>
                                                 <input
                                                     id="image-megapixel"
@@ -846,15 +824,15 @@
                                                     value="1.0"
                                                     min="0.1"
                                                     step="0.1"
-                                                    class="h-[2.4rem] mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm text-center py-2 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                    class="h-[2.4rem] mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm text-center py-2 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-not-allowed" disabled
                                                 >
                                             </div>
-                                            <div class="w-2/3"> <!-- Added col-span-2 for Aspect Ratio -->
-                                                <label for="image-aspect-ratio" class="block text-s font-medium text-gray-500 dark:text-gray-400">Aspect Ratio</label>
+                                            <div class="w-full"> <!-- Added col-span-2 for Aspect Ratio -->
+                                                <!-- <label for="image-aspect-ratio" class="block text-s font-medium text-gray-500 dark:text-gray-400" data-lang-key="aspect_ratio">Aspect Ratio</label> -->
                                                 <div class="mt-1 relative">
                                                     <select
                                                         id="image-aspect-ratio"
-                                                        class="h-[2.4rem] block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm text-center py-2 px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
+                                                        class="h-[2.4rem] block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm text-center py-1 px-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
                                                     >
                                                         <option value="1:1">1:1 (Perfect Square)</option>
                                                         <option value="2:3">2:3 (Classic Portrait)</option>
@@ -886,7 +864,7 @@
                                         <!-- End Updated Grid Layout -->
 
                                         <!-- Display Calculated Dimensions (remains the same) -->
-                                        <div id="calculated-dimensions" class="mt-2.5 text-s text-gray-900 dark:text-white flex justify-around">
+                                        <div id="calculated-dimensions" class="py-2.5 text-s text-gray-900 dark:text-white flex justify-around">
                                              <span>
                                                 <span data-lang-key="height_label">Height</span>: <span id="display-height">1024</span> px
                                              </span>
