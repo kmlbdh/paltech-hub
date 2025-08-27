@@ -169,29 +169,10 @@
       "title": "CFGNorm"
     }
   },
-  "108": {
-    "inputs": {
-      "megapixel": "1.0",
-      "aspect_ratio": "1:1 (Perfect Square)",
-      "divisible_by": "64",
-      "custom_ratio": false,
-      "custom_aspect_ratio": "1:1"
-    },
-    "class_type": "FluxResolutionNode",
-    "_meta": {
-      "title": "Flux Resolution Calc"
-    }
-  },
   "109": {
     "inputs": {
-      "width": [
-        "108",
-        0
-      ],
-      "height": [
-        "108",
-        1
-      ],
+      "width": 1024,
+      "height": 1024,
       "batch_size": 1
     },
     "class_type": "EmptySD3LatentImage",
