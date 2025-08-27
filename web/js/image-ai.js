@@ -78,7 +78,9 @@
         lastUploadedComfyUIName1: null,
         lastUploadedComfyUIName2: null,
         lastUploadedFileIdentifier1: null,
-        lastUploadedFileIdentifier2: null
+        lastUploadedFileIdentifier2: null,
+        resultImgWidth: 0,
+        resultImgHeight: 0,
     };
 
     let activeView = 'image-generation';
@@ -470,14 +472,14 @@
         // MP = W * H / 1e6 => W = sqrt(MP * 1e6 * wRatio / hRatio) if keeping aspect ratio
         // More accurate: Total pixels = MP * 1e6. W/H = wRatio/hRatio => W = sqrt(Total * wRatio / hRatio)
         const totalPixels = megapixel * 1_000_000;
-        const calculatedWidth = Math.round(Math.sqrt(totalPixels * (wRatio / hRatio)));
-        const calculatedHeight = Math.round(Math.sqrt(totalPixels * (hRatio / wRatio)));
+        window.imageGenState.resultImgWidth = Math.round(Math.sqrt(totalPixels * (wRatio / hRatio)));
+        window.imageGenState.resultImgHeight = Math.round(Math.sqrt(totalPixels * (hRatio / wRatio)));
 
         // Update display elements
-        if(display_width_el) display_width_el.textContent = calculatedWidth;
-        if(display_height_el) display_height_el.textContent = calculatedHeight;
+        if(display_width_el) display_width_el.textContent =  window.imageGenState.resultImgWidth;
+        if(display_height_el) display_height_el.textContent = window.imageGenState.resultImgHeight;
 
-        console.log(`Dimensions updated: ${calculatedWidth} x ${calculatedHeight} (MP: ${megapixel}, AR: ${aspectRatioStr})`);
+        console.log(`Dimensions updated: ${window.imageGenState.resultImgWidth} x ${window.imageGenState.resultImgHeight} (MP: ${megapixel}, AR: ${aspectRatioStr})`);
     }
 
     function updateLanguageInContext(context, langCode, languagePack) {
@@ -998,32 +1000,32 @@
             // This is the key change based on your request
             // Get values from the new UI elements
             // const userMegapixel = parseFloat(img_megapixel_input.value);
-            const userAspectRatio = img_aspect_ratio_select.value; // This should match the format expected by the node, e.g., "1:1"
+            // const userAspectRatio = img_aspect_ratio_select.value; // This should match the format expected by the node, e.g., "1:1"
 
             // Find the FluxResolutionNode in your workflow (node ID '108')
-            const fluxResolutionNode = wf_to_use[FLUX_RESOLUTION_NODE];
-            if (fluxResolutionNode) {
-                // Update the inputs of the FluxResolutionNode
-                fluxResolutionNode.inputs.megapixel = "1.0";
-                fluxResolutionNode.inputs.aspect_ratio = userAspectRatio;
-                // Ensure custom_ratio is false if you're using the preset list
-                fluxResolutionNode.inputs.custom_ratio = false;
-                // If you wanted to use custom_aspect_ratio, you would set it like this:
-                // fluxResolutionNode.inputs.custom_aspect_ratio = userAspectRatio; // Only if custom_ratio is true
-                // But based on your image, it seems you use the preset list (aspect_ratio) with custom_ratio = false
+            // const fluxResolutionNode = wf_to_use[FLUX_RESOLUTION_NODE];
+            // if (fluxResolutionNode) {
+            //     // Update the inputs of the FluxResolutionNode
+            //     fluxResolutionNode.inputs.megapixel = "1.0";
+            //     fluxResolutionNode.inputs.aspect_ratio = userAspectRatio;
+            //     // Ensure custom_ratio is false if you're using the preset list
+            //     fluxResolutionNode.inputs.custom_ratio = false;
+            //     // If you wanted to use custom_aspect_ratio, you would set it like this:
+            //     // fluxResolutionNode.inputs.custom_aspect_ratio = userAspectRatio; // Only if custom_ratio is true
+            //     // But based on your image, it seems you use the preset list (aspect_ratio) with custom_ratio = false
 
-                console.log(`Updated FluxResolutionNode (${FLUX_RESOLUTION_NODE}): Megapixel=${userMegapixel}, Aspect Ratio=${userAspectRatio}`);
-            } else {
-                console.warn("FluxResolutionNode (ID '108') not found in the workflow. Dimensions might not be set correctly.");
-                // You might want to display a warning to the user or handle this case
-            }
+            //     console.log(`Updated FluxResolutionNode (${FLUX_RESOLUTION_NODE}): Megapixel=${userMegapixel}, Aspect Ratio=${userAspectRatio}`);
+            // } else {
+            //     console.warn("FluxResolutionNode (ID '108') not found in the workflow. Dimensions might not be set correctly.");
+            //     // You might want to display a warning to the user or handle this case
+            // }
 
             // Option B: Set EmptySD3LatentImage (109) directly
             const batchSize = parseInt(batch_size_input.value);
             if(wf_to_use[EMPTY_LATENT_IMAGE_NODE]) {
                 wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.batch_size = batchSize;
-                // wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = width; // If node accepts direct input
-                // wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = height; // If node accepts direct input
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = width; // If node accepts direct input
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = height; // If node accepts direct input
             }
 
             // 7. Upload Images and Set LoadImage Nodes
