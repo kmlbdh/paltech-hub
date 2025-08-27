@@ -383,22 +383,30 @@
         }
 
         /* Specific styles for "Select Image" button (label for input type file) */
-        html[data-theme='white'] label[for$="-image-input"],
-         html[data-theme='white'] label[for="image-input"] {
+        html[data-theme='white'] label[for$="image-input-1"],
+        html[data-theme='white'] label[for="image-input-1"],
+        html[data-theme='white'] label[for$="image-input-2"],
+        html[data-theme='white'] label[for="image-input-2"] {
             background-color: #d1d5db; /* bg-gray-300 */
             color: #1f2937; /* text-gray-800 */
         }
-        html[data-theme='white'] label[for="image-input"]:hover,
-        html[data-theme='white'] label[for$="-image-input"]:hover {
+        html[data-theme='white'] label[for="image-input-1"]:hover,
+        html[data-theme='white'] label[for$="image-input-1"]:hover,
+        html[data-theme='white'] label[for$="image-input-2"]:hover,
+        html[data-theme='white'] label[for$="image-input-2"]:hover {
             background-color: #9ca3af; /* hover:bg-gray-400 */
         }
-        html[data-theme='dark'] label[for="image-input"],
-        html[data-theme='dark'] label[for$="-image-input"] {
+        html[data-theme='dark'] label[for="image-input-1"],
+        html[data-theme='dark'] label[for$="image-input-1"],
+        html[data-theme='dark'] label[for$="image-input-2"],
+        html[data-theme='dark'] label[for$="image-input-2"] {
             background-color: #4b5563; /* bg-gray-700 */
             color: #e5e7eb; /* text-gray-200 */
         }
-        html[data-theme='dark'] label[for$="-image-input"]:hover,
-        html[data-theme='dark'] label[for="image-input"]:hover {
+        html[data-theme='dark'] label[for$="image-input-1"]:hover,
+        html[data-theme='dark'] label[for="image-input-1"]:hover,
+        html[data-theme='dark'] label[for$="image-input-2"]:hover,
+        html[data-theme='dark'] label[for="image-input-2"]:hover {
             background-color: #6b7280; /* hover:bg-gray-600 */
         }
 
