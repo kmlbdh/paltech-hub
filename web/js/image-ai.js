@@ -157,6 +157,7 @@
             reconnect_failed: "Could not reconnect to the server. Please refresh the page.",
             footer_text: "© 2024 Paltech Hub AI v0.1. All rights reserved.",
             copied_to_clipboard: "Copied to clipboard!",
+            failed_to_copy: "Failed to copy to clipboard.",
             customized_prompt_title: "Customized Prompt",
             enable_custom_poses: "Enable Custom Poses",
             pose_select_label: "Select a Pose",
@@ -272,6 +273,7 @@
             reconnect_failed: "تعذّر الاتصال بالخادم. يُرجى تحديث الصفحة.",
             footer_text: "© 2024 Paltech Hub AI v0.1. جميع الحقوق محفوظة.",
             copied_to_clipboard: "تم النسخ إلى الحافظة!",
+            failed_to_copy: "فشل في النسخ إلى الحافظة.",
             customized_prompt_title: "مطالبة مخصصة",
             enable_custom_poses: "تفعيل وضعيات المودل (الملابس)",
             pose_select_label: "اختر وضعية المودل",
@@ -344,8 +346,8 @@
             client_id: 'page-' + Math.random().toString(36).substring(2, 15),
             ready: false,
             reconnectAttempts: 0,
-            MAX_RECONNECT_ATTEMPTS: 5,
-            RECONNECT_DELAY_MS: 9000,
+            MAX_RECONNECT_ATTEMPTS: 100,
+            RECONNECT_DELAY_MS: 20000,
             listeners: [],
             _initialized: false, // Prevent double connect
 
@@ -393,7 +395,8 @@
                         setTimeout(() => this.connect(), this.RECONNECT_DELAY_MS);
                         window.appUtils.displayNotification('ws_connecting_message', langConfig);
                     } else {
-                        window.appUtils.displayNotification('reconnect_failed', langConfig);
+                        console.error('Max reconnection attempts reached. Giving up.');
+                        window.appUtils.displayModalMessage('reconnect_failed', langConfig);
                     }
                 };
 
@@ -733,6 +736,32 @@
         });
     }
 
+    function copyTextToClipboard(text) {
+        if (!text) return;
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                window.appUtils.displayNotification('copied_to_clipboard', langConfig);
+                displayNotification('copied_to_clipboard', 2000);
+            } else {
+                window.appUtils.displayNotification('failed_to_copy', langConfig);
+            }
+        } catch (err) {
+            window.appUtils.displayNotification('failed_to_copy', langConfig);
+            console.error('Copy failed: ', err);
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+
+
     function clearHistory() {
         sessionStorage.removeItem(SESSION_HISTORY_KEY);
         renderHistory();
@@ -1024,8 +1053,8 @@
             const batchSize = parseInt(batch_size_input.value);
             if(wf_to_use[EMPTY_LATENT_IMAGE_NODE]) {
                 wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.batch_size = batchSize;
-                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = width; // If node accepts direct input
-                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = height; // If node accepts direct input
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = window.imageGenState.resultImgWidth; // If node accepts direct input
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = window.imageGenState.resultImgHeight; // If node accepts direct input
             }
 
             // 7. Upload Images and Set LoadImage Nodes
