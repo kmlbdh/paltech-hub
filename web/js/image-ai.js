@@ -728,37 +728,12 @@
             if (promptElement) {
                 promptElement.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent any container bubbling
-                    copyTextToClipboard(item.promptText);
+                    window.appUtils.copyTextToClipboard(item.promptText);
                 });
             }
 
             historyContainer.appendChild(historyItemDiv);
         });
-    }
-
-    function copyTextToClipboard(text) {
-        if (!text) return;
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'absolute';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                window.appUtils.displayNotification('copied_to_clipboard', langConfig);
-                displayNotification('copied_to_clipboard', 2000);
-            } else {
-                window.appUtils.displayNotification('failed_to_copy', langConfig);
-            }
-        } catch (err) {
-            window.appUtils.displayNotification('failed_to_copy', langConfig);
-            console.error('Copy failed: ', err);
-        } finally {
-            document.body.removeChild(textarea);
-        }
     }
 
 
