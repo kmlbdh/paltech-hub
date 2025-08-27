@@ -20,3 +20,5 @@ image-ai-2imgs.html
 image-ai-2imgs.js
 prompt-generator2.js
 
+web/js/wan_i2v2.json
+web/js/refine_upscale_video2.json

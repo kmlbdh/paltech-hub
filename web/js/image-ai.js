@@ -16,12 +16,16 @@
     const guidance_scale_input = _('#guidance-scale-input');
     const guidance_scale_value_el = _('#guidance-scale-value');
     const prompt_input = _('#prompt-input');
-    const img_height_input = _('#image-height');
-    const img_width_input = _('#image-width');
-    const image_input = _("#image-input");
-    const image_size_radioBtn = _("#image-dimension-presets");
+    // const img_height_input = _('#image-height');
+    // const img_width_input = _('#image-width');
+
+    const image_input_1 = _("#image-input-1");
+    const image_input_2 = _("#image-input-2");
+    const display_uploaded_image_el_1 = _("#display-uploaded-image-1");
+    const display_uploaded_image_el_2 = _("#display-uploaded-image-2");
+
+    // const image_size_radioBtn = _("#image-dimension-presets");
     const node_status_el = _('#current-node-status');
-    const display_uploaded_image_el = _("#display-uploaded-image");
     const guideContainer = _("#guide-container");
 
     const languageSelect = _('#language-select');
@@ -42,6 +46,13 @@
     const poseSelectValueInput = _('#pose-select-value');
     const posesModal = _('#poses-modal');
     const posesModalList = _('#poses-modal-list');
+
+    const img_megapixel_input = _('#image-megapixel');
+    const img_aspect_ratio_select = _('#image-aspect-ratio');
+    const display_width_el = _('#display-width');
+    const display_height_el = _('#display-height');
+    const calculated_dimensions_el = _('#calculated-dimensions');
+
     // const posesModalCloseButton = _('#poses-modal-close-button');
     let posesData = []; // To store the loaded poses from poses.json
 
@@ -49,18 +60,25 @@
     const workflows = {};
     let IS_GENERATING = false;
 
-    // --- Workflow Node Constants ---
-    const CLIP_TEXT_ENCODE_NODE = '308';
-    const K_SAMPLER_NODE = '318';
-    const EMPTY_LATENT_IMAGE_NODE = '355';
-    const KONTEXT_GUIDANCE_NODE = '316';
-    const LOAD_IMAGE_NODE = '357';
-
+    // --- Workflow Node Constants (Updated for your workflow) ---
+    const QWEN_CLIP_TEXT_ENCODE_POSITIVE_NODE = '97'; // TextEncodeQwenImageEdit (Positive)
+    const QWEN_CLIP_TEXT_ENCODE_NEGATIVE_NODE = '98'; // TextEncodeQwenImageEdit (Negative)
+    const K_SAMPLER_NODE = '3';
+    const EMPTY_LATENT_IMAGE_NODE = '109'; // EmptySD3LatentImage
+    const FLUX_RESOLUTION_NODE = '108'; // FluxResolutionNode
+    const LOAD_IMAGE_NODE_1 = '110'; // LoadImage for Model/Clothes 1
+    const LOAD_IMAGE_NODE_2 = '113'; // LoadImage for Clothes 2
+    const IMAGE_STITCH_NODE = '111'; // ImageStitch
+    const CFG_NORM_NODE = '102'; // CFGNorm
+    // Add more if needed for steps, scheduler, etc.
 
     window.imageGenState = window.imageGenState || {
-        uploadedImageFile: null,
-        lastUploadedComfyUIName: null,
-        lastUploadedFileIdentifier: null
+        uploadedImageFile1: null, // For Model/Clothes 1
+        uploadedImageFile2: null, // For Clothes 2
+        lastUploadedComfyUIName1: null,
+        lastUploadedComfyUIName2: null,
+        lastUploadedFileIdentifier1: null,
+        lastUploadedFileIdentifier2: null
     };
 
     let activeView = 'image-generation';
@@ -70,6 +88,7 @@
     // --- Constants ---
     const SESSION_HISTORY_KEY = 'imagePromptHistory';
     const WORKFLOW_PATHS = {
+        qwen_edit: '/js/qwen_edit_2imgs.json',
         flux_kontext: '/js/flux-kontext-rosmary.json',
         flux_kontext_model: '/js/flux-kontext-model.json'
         // flux_kontext: '/paltech/js/flux-kontext.json',
@@ -193,6 +212,9 @@
             model_image_preview_placeholder: "Model Image Preview",
             model_image_upload_title: "Upload Model Image",
 
+            aspect_ratio: "Aspect Ratio",
+            megapixel: "Megapixel",
+
         },
         ar: {
             generation_params_title: "معلمات التوليد",
@@ -305,6 +327,9 @@
             select_model_button: "اختر صورة للمودل",
             model_image_preview_placeholder: "معاينة الصورة المودل",
             model_image_upload_title: "تحميل صورة المودل",
+
+            aspect_ratio: "نسبة العرض إلى الارتفاع",
+            megapixel: "الميغابكسل",
         }
     };
 
@@ -423,6 +448,38 @@
         }
     }
 
+    // --- Dimension Calculation and Display ---
+    function calculateAndDisplayDimensions() {
+        // Get values from inputs
+        const megapixel = parseFloat(img_megapixel_input.value) || 1.0; // Default to 1.0 if invalid
+        const aspectRatioStr = img_aspect_ratio_select.value;
+        let [wRatio, leftText] = aspectRatioStr.split(':');
+        const [hRatio, leftTxt] = leftText.split(' ').map(Number);
+    
+        wRatio = Number(wRatio);
+        
+        if (isNaN(wRatio) || isNaN(hRatio)) {
+            console.warn("Invalid aspect ratio selected:", aspectRatioStr);
+            // Optionally display an error or default values
+            if(display_width_el) display_width_el.textContent = 'N/A';
+            if(display_height_el) display_height_el.textContent = 'N/A';
+            return;
+        }
+
+        // Calculate base dimension using the smaller ratio as baseline for simplicity
+        // MP = W * H / 1e6 => W = sqrt(MP * 1e6 * wRatio / hRatio) if keeping aspect ratio
+        // More accurate: Total pixels = MP * 1e6. W/H = wRatio/hRatio => W = sqrt(Total * wRatio / hRatio)
+        const totalPixels = megapixel * 1_000_000;
+        const calculatedWidth = Math.round(Math.sqrt(totalPixels * (wRatio / hRatio)));
+        const calculatedHeight = Math.round(Math.sqrt(totalPixels * (hRatio / wRatio)));
+
+        // Update display elements
+        if(display_width_el) display_width_el.textContent = calculatedWidth;
+        if(display_height_el) display_height_el.textContent = calculatedHeight;
+
+        console.log(`Dimensions updated: ${calculatedWidth} x ${calculatedHeight} (MP: ${megapixel}, AR: ${aspectRatioStr})`);
+    }
+
     function updateLanguageInContext(context, langCode, languagePack) {
         if (!context || !langCode || !languagePack) {
             console.warn("[updateLanguageInContext] Invalid arguments provided.", { context, langCode, languagePack });
@@ -504,9 +561,8 @@
         if (interrupt_button) toggleDisplay(interrupt_button, isGenerating);
 
         const inputs = [
-            seed_input, prompt_input, batch_size_input, img_height_input, 
-            img_width_input, image_input, is_random_input,
-            enableTurkishWowCheckbox, poseSelectButton
+            seed_input, prompt_input, batch_size_input, is_random_input,
+            enableTurkishWowCheckbox, poseSelectButton, image_input_1, image_input_2, img_aspect_ratio_select
         ];
         inputs.forEach(input => { if (input) input.disabled = isGenerating; });
         
@@ -564,23 +620,33 @@
         }
     }
 
-    function handleImagePreview(file) {
-        window.imageGenState.uploadedImageFile = file;
-        if (!display_uploaded_image_el) return;
-        if (window.imageGenState.uploadedImageFile) {
+    // --- Modified handleImagePreview Function ---
+    function handleImagePreview(file, imageId) {
+        if (imageId === 1) {
+            window.imageGenState.uploadedImageFile1 = file;
+            updateImagePreview(file, display_uploaded_image_el_1);
+        } else if (imageId === 2) {
+            window.imageGenState.uploadedImageFile2 = file;
+            updateImagePreview(file, display_uploaded_image_el_2);
+        }
+    }
+
+    function updateImagePreview(file, displayElement) {
+        if (!displayElement) return;
+        if (file) {
             const reader = new FileReader();
             reader.onload = () => {
                 const img = new Image();
                 img.onload = () => {
-                    display_uploaded_image_el.style.backgroundImage = `url(${reader.result})`;
-                    display_uploaded_image_el.innerHTML = '';
+                    displayElement.style.backgroundImage = `url(${reader.result})`;
+                    displayElement.innerHTML = '';
                 };
                 img.src = reader.result;
             };
-            reader.readAsDataURL(window.imageGenState.uploadedImageFile);
+            reader.readAsDataURL(file);
         } else {
-            display_uploaded_image_el.style.backgroundImage = 'none';
-            display_uploaded_image_el.innerHTML = `<span class="text-gray-500 dark:text-gray-400" data-lang-key="image_preview_placeholder">${languages[currentLanguage].image_preview_placeholder}</span>`;
+            displayElement.style.backgroundImage = 'none';
+            displayElement.innerHTML = `<span class="text-gray-500 dark:text-gray-400" data-lang-key="image_preview_placeholder">${languages[currentLanguage].image_preview_placeholder}</span>`;
         }
     }
 
@@ -859,56 +925,152 @@
                 updateUIForGenerationState(false);
                 return;
             }
-            if (!window.imageGenState.uploadedImageFile) {
-                window.appUtils.displayNotification('image_required', langConfig);
+
+            if (!window.imageGenState.uploadedImageFile1 || !window.imageGenState.uploadedImageFile2) {
+                window.appUtils.displayNotification('image_required', langConfig); // You might want a more specific message
                 updateUIForGenerationState(false);
                 return;
             }
             
             updateUIForGenerationState(true);
 
-            if (!workflows || !workflows.flux_kontext) {
+            if (!workflows || !workflows.qwen_edit) {
                 window.appUtils.displayModalMessage('image_generation_workflow_not_loaded', langConfig);
                 updateUIForGenerationState(false);
                 return;
             }
 
-            let wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext));
+            let wf_to_use = JSON.parse(JSON.stringify(workflows.qwen_edit));
 
-            if(enableTurkishWowCheckbox.checked) {
-                wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext_model));
+            // if(enableTurkishWowCheckbox.checked) {
+            //     wf_to_use = JSON.parse(JSON.stringify(workflows.flux_kontext_model));
+            // }
+            
+            
+            // 2. Set Prompt
+            if (prompt_input && wf_to_use[QWEN_CLIP_TEXT_ENCODE_POSITIVE_NODE]) {
+                wf_to_use[QWEN_CLIP_TEXT_ENCODE_POSITIVE_NODE].inputs.prompt = prompt_input.value;
             }
-            
-            
-            if(prompt_input) wf_to_use[CLIP_TEXT_ENCODE_NODE].inputs.text = prompt_input.value;
-            if(is_random_input && is_random_input.checked && seed_input) seed_input.value = Math.floor(Math.random() * 1e15);
+            // Set negative prompt (usually empty for this model/setup)
+            if (wf_to_use[QWEN_CLIP_TEXT_ENCODE_NEGATIVE_NODE]) {
+                wf_to_use[QWEN_CLIP_TEXT_ENCODE_NEGATIVE_NODE].inputs.prompt = ""; // Or get from a separate input if you add one
+            }
 
-            if(wf_to_use[K_SAMPLER_NODE]) {
+            // 3. Set Seed
+            if (is_random_input && is_random_input.checked && seed_input) {
+                seed_input.value = Math.floor(Math.random() * 1e15);
+            }
+            if (wf_to_use[K_SAMPLER_NODE]) {
                 wf_to_use[K_SAMPLER_NODE].inputs.seed = parseInt(seed_input.value);
             }
+
+            // 4. Set CFG (Guidance Scale)
+            // Note: Your workflow has CFG=1. The slider value (guidance_scale_input) might map differently.
+            // If you want to control the 'shift' in ModelSamplingAuraFlow (node 66):
+            // if(wf_to_use['66']) { // Directly reference the node ID
+            //     wf_to_use['66'].inputs.shift = parseFloat(guidance_scale_input.value); // Or map the slider value appropriately
+            // }
+            // Or if you want to control the CFG in KSampler (node 3):
+            // if(wf_to_use[K_SAMPLER_NODE]) {
+            //    wf_to_use[K_SAMPLER_NODE].inputs.cfg = parseFloat(guidance_scale_input.value);
+            // }
+
+            // 5. Set Steps (if you add a steps input or want to control it)
+            // if(wf_to_use[K_SAMPLER_NODE]) {
+            //    wf_to_use[K_SAMPLER_NODE].inputs.steps = parseInt(steps_input.value); // Add steps_input element
+            // }
+
+            // 6. Set Dimensions (Modify based on your resolution node setup)
+            // Option A: Set FluxResolutionNode (108)
+            // You'll likely need separate height/width inputs or derive them from aspect ratio.
+            // const height = parseInt(img_height_input.value);
+            // const width = parseInt(img_width_input.value);
+            // if(wf_to_use[FLUX_RESOLUTION_NODE]) {
+            //     // This node calculates based on megapixel and aspect ratio.
+            //     // You might need to adjust its inputs (megapixel, aspect_ratio) instead of direct width/height.
+            //     // Or modify the node to accept direct width/height if possible.
+            //     // Example (if it accepted direct inputs - check your node's actual inputs):
+            //     // wf_to_use[FLUX_RESOLUTION_NODE].inputs.width = width;
+            //     // wf_to_use[FLUX_RESOLUTION_NODE].inputs.height = height;
+            // }
+
+            // --- UPDATE FLUX RESOLUTION NODE ---
+            // This is the key change based on your request
+            // Get values from the new UI elements
+            const userMegapixel = parseFloat(img_megapixel_input.value);
+            const userAspectRatio = img_aspect_ratio_select.value; // This should match the format expected by the node, e.g., "1:1"
+
+            // Find the FluxResolutionNode in your workflow (node ID '108')
+            const fluxResolutionNode = wf_to_use[FLUX_RESOLUTION_NODE];
+            if (fluxResolutionNode) {
+                // Update the inputs of the FluxResolutionNode
+                fluxResolutionNode.inputs.megapixel = userMegapixel;
+                fluxResolutionNode.inputs.aspect_ratio = userAspectRatio;
+                // Ensure custom_ratio is false if you're using the preset list
+                fluxResolutionNode.inputs.custom_ratio = false;
+                // If you wanted to use custom_aspect_ratio, you would set it like this:
+                // fluxResolutionNode.inputs.custom_aspect_ratio = userAspectRatio; // Only if custom_ratio is true
+                // But based on your image, it seems you use the preset list (aspect_ratio) with custom_ratio = false
+
+                console.log(`Updated FluxResolutionNode (${FLUX_RESOLUTION_NODE}): Megapixel=${userMegapixel}, Aspect Ratio=${userAspectRatio}`);
+            } else {
+                console.warn("FluxResolutionNode (ID '108') not found in the workflow. Dimensions might not be set correctly.");
+                // You might want to display a warning to the user or handle this case
+            }
+
+            // Option B: Set EmptySD3LatentImage (109) directly
+            const batchSize = parseInt(batch_size_input.value);
             if(wf_to_use[EMPTY_LATENT_IMAGE_NODE]) {
-                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.batch_size = parseInt(batch_size_input.value);
-                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = parseInt(img_width_input.value);
-                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = parseInt(img_height_input.value);
+                wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.batch_size = batchSize;
+                // wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.width = width; // If node accepts direct input
+                // wf_to_use[EMPTY_LATENT_IMAGE_NODE].inputs.height = height; // If node accepts direct input
             }
-            if(wf_to_use[KONTEXT_GUIDANCE_NODE]) {
-               wf_to_use[KONTEXT_GUIDANCE_NODE].inputs.guidance = parseFloat(guidance_scale_input.value);
-            }
-            const comfyUIImageName = await window.appUtils.uploadImage(
-                window.imageGenState.uploadedImageFile,
-                'uploading_image',
+
+            // 7. Upload Images and Set LoadImage Nodes
+            let comfyUIImageName1 = null;
+            let comfyUIImageName2 = null;
+
+            // --- Upload Image 1 ---
+            comfyUIImageName1 = await window.appUtils.uploadImage(
+                window.imageGenState.uploadedImageFile1,
+                'uploading_image', // Or a specific key for image 1
                 langConfig
             );
-            if (!comfyUIImageName) {
+            if (!comfyUIImageName1) {
+                console.error("Failed to upload image 1");
                 updateUIForGenerationState(false);
-                return;
+                return; // Stop if upload fails
             }
-            if (wf_to_use[LOAD_IMAGE_NODE]) wf_to_use[LOAD_IMAGE_NODE].inputs.image = comfyUIImageName;
+            // Set the filename for the first LoadImage node (110)
+            if (wf_to_use[LOAD_IMAGE_NODE_1]) {
+                wf_to_use[LOAD_IMAGE_NODE_1].inputs.image = comfyUIImageName1;
+                console.log(`Set LoadImage Node ${LOAD_IMAGE_NODE_1} image to:`, comfyUIImageName1);
+            }
 
+            // --- Upload Image 2 ---
+            comfyUIImageName2 = await window.appUtils.uploadImage(
+                window.imageGenState.uploadedImageFile2,
+                'uploading_image', // Or a specific key for image 2
+                langConfig
+            );
+            if (!comfyUIImageName2) {
+                console.error("Failed to upload image 2");
+                updateUIForGenerationState(false);
+                return; // Stop if upload fails
+            }
+            // Set the filename for the second LoadImage node (113)
+            if (wf_to_use[LOAD_IMAGE_NODE_2]) {
+                wf_to_use[LOAD_IMAGE_NODE_2].inputs.image = comfyUIImageName2;
+                console.log(`Set LoadImage Node ${LOAD_IMAGE_NODE_2} image to:`, comfyUIImageName2);
+            }
+
+            // 8. Queue Prompt
             try {
                 await window.appUtils.queuePrompt(wf_to_use, window.sharedWS.client_id);
+                console.log("Prompt queued successfully.");
             } catch (e) {
-                window.appUtils.displayModalMessage(`${e.message}`, langConfig);
+                console.error("Error queuing prompt:", e);
+                window.appUtils.displayModalMessage(`${e.message || 'Unknown error queuing prompt'}`, langConfig);
                 updateUIForGenerationState(false);
             }
         });
@@ -916,9 +1078,9 @@
 
 
     if(interrupt_button) interrupt_button.addEventListener('click', () => fetch('/interrupt', { method: 'POST' }));
-    if(image_size_radioBtn) image_size_radioBtn.addEventListener('change', e => { 
-        if (e.target.name === 'image-size') setImageDimensions(e.target.value); 
-    });
+    // if(image_size_radioBtn) image_size_radioBtn.addEventListener('change', e => { 
+    //     if (e.target.name === 'image-size') setImageDimensions(e.target.value); 
+    // });
     let timeout;
     guidance_scale_input.addEventListener('input', e => {
         clearTimeout(timeout);
@@ -926,41 +1088,52 @@
             if(guidance_scale_value_el) guidance_scale_value_el.textContent = e.target.value;
         }, 50);
     });
-    // if(guidance_scale_input) guidance_scale_input.addEventListener('input', e => { if(guidance_scale_value_el) guidance_scale_value_el.textContent = e.target.value; });
-    if(image_input) image_input.addEventListener('change', function() { handleImagePreview(this.files ? this.files[0] : null); });
+    // Replace the single image_input listener
+    document.querySelectorAll('.image-input-class').forEach(input => {
+        input.addEventListener('change', function() {
+            const imageId = this.dataset.imageId; // Get ID from data attribute
+            const file = this.files ? this.files[0] : null;
+            if (imageId === '1') {
+                handleImagePreview(file, 1); // Pass file and ID
+            } else if (imageId === '2') {
+                handleImagePreview(file, 2); // Pass file and ID
+            }
+        });
+    });
+
     if(modalCloseButton) modalCloseButton.addEventListener('click', () => window.appUtils.displayModalMessage('', langConfig, false));
     if(clearHistoryButton) clearHistoryButton.addEventListener('click', clearHistory);
     
     // Turkish WOW event listeners
-    if (enableTurkishWowCheckbox) {
-        enableTurkishWowCheckbox.addEventListener('change', () => {
-            if (turkishWowControls) {
-                const isChecked = enableTurkishWowCheckbox.checked;
-                turkishWowControls.style.display = isChecked ? 'block' : 'none';
-                poseSelectButton.disabled = !isChecked;
+    // if (enableTurkishWowCheckbox) {
+    //     enableTurkishWowCheckbox.addEventListener('change', () => {
+    //         if (turkishWowControls) {
+    //             const isChecked = enableTurkishWowCheckbox.checked;
+    //             turkishWowControls.style.display = isChecked ? 'block' : 'none';
+    //             poseSelectButton.disabled = !isChecked;
                 
-                if (!isChecked) {
-                    // Clear selection and prompt when disabled
-                    poseSelectValueInput.value = "";
-                    const selectedPoseImg = _('#selected-pose-img');
-                    const selectedPoseTextSpan = _('#selected-pose-text');
-                    if(selectedPoseImg) selectedPoseImg.classList.add('hidden');
-                    if(selectedPoseTextSpan) selectedPoseTextSpan.innerHTML = `<span data-lang-key="select_pose_placeholder">${languages[currentLanguage].select_pose_placeholder}</span>`;
-                    if(prompt_input) prompt_input.value = "";
-                }
-            }
-        });
-    }
+    //             if (!isChecked) {
+    //                 // Clear selection and prompt when disabled
+    //                 poseSelectValueInput.value = "";
+    //                 const selectedPoseImg = _('#selected-pose-img');
+    //                 const selectedPoseTextSpan = _('#selected-pose-text');
+    //                 if(selectedPoseImg) selectedPoseImg.classList.add('hidden');
+    //                 if(selectedPoseTextSpan) selectedPoseTextSpan.innerHTML = `<span data-lang-key="select_pose_placeholder">${languages[currentLanguage].select_pose_placeholder}</span>`;
+    //                 if(prompt_input) prompt_input.value = "";
+    //             }
+    //         }
+    //     });
+    // }
 
    // Poses Modal Listeners
-   if (poseSelectButton) {
-       poseSelectButton.addEventListener('click', () => {
-           if (posesModal) {
-               posesModal.classList.remove('hidden');
-               document.body.classList.add('modal-open');
-           }
-       });
-   }
+//    if (poseSelectButton) {
+//        poseSelectButton.addEventListener('click', () => {
+//            if (posesModal) {
+//                posesModal.classList.remove('hidden');
+//                document.body.classList.add('modal-open');
+//            }
+//        });
+//    }
 
       // --- Tab Navigation ---
     function switchView(viewId) {
@@ -1002,25 +1175,8 @@
                 if (viewId === 'prompt-generation' && !promptGeneratorLoaded) {
                     loadPromptGeneratorContent();
                 } 
-                // else if (viewId === 'prompt-generation' && promptGeneratorLoaded) {
-                //     // Sync language for already loaded Prompt Generator view
-                //     // const currentLang = languageSelect ? languageSelect.value : currentLanguage;
-                //     // if (targetViewElement) {
-                //     //      updateLanguageInContext(targetViewElement, currentLang, languages[currentLang]);
-                //     //      console.log("Prompt Generator view language synced to:", currentLang);
-                //     // }
-                // }
             }, 300); // Match CSS transition duration
         } else {
-            // Fallback
-            // viewContents.forEach(view => view.classList.add('hidden'));
-            // if (targetViewElement) {
-            //     targetViewElement.classList.remove('hidden');
-            //     activeView = viewId;
-            //     if (viewId === 'prompt-generation' && !promptGeneratorLoaded) {
-            //         loadPromptGeneratorContent();
-            //     }
-            // }
             tabButtons.forEach(button => {
                 if (button.dataset.tab === viewId) {
                     button.classList.add('active');
@@ -1149,14 +1305,41 @@
         }
     }
 
+    // Inside the event listener for img_aspect_ratio_select change
+    // if (img_aspect_ratio_select) {
+    //     img_aspect_ratio_select.addEventListener('change', () => {
+    //         console.log('changed', img_aspect_ratio_select);
+    //         // Update the FluxResolutionNode logic here...
+            
+    //         // Now update the icon
+    //         const selectedValue = img_aspect_ratio_select.value;
+    //         const ratioParts = selectedValue.split(':');
+    //         const ratioNum = parseInt(ratioParts[0]);
+    //         aspect_ratio_icon.style.display = 'block';
+    //         aspect_ratio_icon.textContent = ratioNum;
+    //     });
+    // }
+
+    // --- Event Listeners for Dimension Inputs ---
+    // Add these listeners, typically after the selectors are defined and inside the DOMContentLoaded or IIFE
+    // if (img_megapixel_input) {
+    //     img_megapixel_input.addEventListener('input', calculateAndDisplayDimensions);
+    //     img_megapixel_input.addEventListener('change', calculateAndDisplayDimensions); // For final value
+    // }
+    if (img_aspect_ratio_select) {
+        console.log('tessssssssssssssst');
+        img_aspect_ratio_select.addEventListener('change', calculateAndDisplayDimensions);
+    }
+
     // Initial Load
     document.addEventListener('DOMContentLoaded', async () => {
         setupEventListenersAndLanguage();
         await load_api_workflows();
-        await loadPoses();
-        setImageDimensions(_('input[name="image-size"]:checked')?.value || 'square');
+        // await loadPoses();
+        // setImageDimensions(_('input[name="image-size"]:checked')?.value || 'square');
         updateUIForGenerationState(false);
         setupTabNavigation(); // Setup tab navigation
+        calculateAndDisplayDimensions(); 
     });
 
 })(window, document);
