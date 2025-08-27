@@ -167,7 +167,7 @@
   },
   "32": {
     "inputs": {
-      "text": "[\"Wan 2.2 I2V 14B Q6 X4 - 32FPS_00003.mp4\", \"\", \"output\"]",
+      "text": "[\"Wan 2.2 I2V 14B Q6 X4 - 32FPS_00006.mp4\", \"\", \"output\"]",
       "anything": [
         "9",
         0
@@ -176,6 +176,80 @@
     "class_type": "easy showAnything",
     "_meta": {
       "title": "Show Any"
+    }
+  },
+  "33": {
+    "inputs": {
+      "message": "🧹 kmlbdh RAM Cleaner: Cache cleared",
+      "images": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "KMLBDH_RAMCleaner",
+    "_meta": {
+      "title": "🧹 kmlbdh RAM Cleaner"
+    }
+  },
+  "34": {
+    "inputs": {
+      "message": "🧹 kmlbdh RAM Cleaner: Cache cleared",
+      "images": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "KMLBDH_RAMCleaner",
+    "_meta": {
+      "title": "🧹 kmlbdh RAM Cleaner"
+    }
+  },
+  "35": {
+    "inputs": {
+      "anything": [
+        "19",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "Clean VRAM Used"
+    }
+  },
+  "36": {
+    "inputs": {
+      "anything": [
+        "19",
+        0
+      ]
+    },
+    "class_type": "easy clearCacheAll",
+    "_meta": {
+      "title": "Clear Cache All"
+    }
+  },
+  "37": {
+    "inputs": {
+      "anything": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "Clean VRAM Used"
+    }
+  },
+  "38": {
+    "inputs": {
+      "anything": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "easy clearCacheAll",
+    "_meta": {
+      "title": "Clear Cache All"
     }
   }
 }
