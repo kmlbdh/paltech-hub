@@ -13,14 +13,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Base styles for body */
-        html[data-theme='white'] body {
+        html[data-theme='white'] body, 
+        html[data-theme='white'] main,
+        html[data-theme='white'] main h2,
+        html[data-theme='white'] main p,
+        html[data-theme='white'] main div {
             background-color: #ffffff; /* bg-white */
             color: #1f2937; /* text-gray-800 */
         }
         /* Dark mode styles applied via data-theme="dark" on html */
-        html[data-theme='dark'] body {
+        html[data-theme='dark'] body,
+        html[data-theme='dark'] main,
+        html[data-theme='dark'] main  h2,
+        html[data-theme='dark'] main  p,
+        html[data-theme='dark'] main  div {
             background-color: #111827; /* bg-gray-900 */
             color: #e5e7eb; /* text-gray-200 */
+        }
+        
+        html[data-theme='white'] main {
+            background-color: #f9fafb; /* bg-gray-900 */
         }
 
         /* Apply Cairo font when language is Arabic (dir="rtl") */
