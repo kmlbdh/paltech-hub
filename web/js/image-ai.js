@@ -1004,7 +1004,7 @@
             const fluxResolutionNode = wf_to_use[FLUX_RESOLUTION_NODE];
             if (fluxResolutionNode) {
                 // Update the inputs of the FluxResolutionNode
-                fluxResolutionNode.inputs.megapixel = userMegapixel;
+                // fluxResolutionNode.inputs.megapixel = userMegapixel;
                 fluxResolutionNode.inputs.aspect_ratio = userAspectRatio;
                 // Ensure custom_ratio is false if you're using the preset list
                 fluxResolutionNode.inputs.custom_ratio = false;
