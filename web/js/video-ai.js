@@ -228,8 +228,8 @@
             client_id: 'page-' + Math.random().toString(36).substring(2, 15),
             ready: false,
             reconnectAttempts: 0,
-            MAX_RECONNECT_ATTEMPTS: 5,
-            RECONNECT_DELAY_MS: 9000,
+            MAX_RECONNECT_ATTEMPTS: 100,
+            RECONNECT_DELAY_MS: 20000,
             listeners: [],
             _initialized: false, // Prevent double connect
 
@@ -276,8 +276,9 @@
                         this.reconnectAttempts++;
                         setTimeout(() => this.connect(), this.RECONNECT_DELAY_MS);
                         window.appUtils.displayNotification('ws_connecting_message', langConfig);
-                    } else {
-                        window.appUtils.displayNotification('reconnect_failed', langConfig);
+                    }  else {
+                        console.error('Max reconnection attempts reached. Giving up.');
+                        window.appUtils.displayModalMessage('reconnect_failed', langConfig);
                     }
                 };
 

@@ -22,3 +22,5 @@ prompt-generator2.js
 
 web/js/wan_i2v2.json
 web/js/refine_upscale_video2.json
+web/js/image-ai2.js
+web/image-ai2.html
